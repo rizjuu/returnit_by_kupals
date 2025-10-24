@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: url('LRBG.png') center/cover no-repeat;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  color: #fff;
+  overflow: hidden;
+}
+
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 0;
+}
+
+.form-wrapper {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: 380px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.main-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffc107;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #d1d1d1;
+  margin-bottom: 25px;
+}
+
+.form-box {
+  display: none;
+}
+
+.form-box.active {
+  display: block;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #0d6efd;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #0b5ed7;
+}
+
+.switch-text {
+  margin-top: 15px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.switch-btn {
+  background: transparent;
+  border: 1px solid #ffc107;
+  color: #ffc107;
+  font-size: 13px;
+  padding: 5px 12px;
+  margin-top: 8px;
+  border-radius: 20px;
+  transition: 0.3s;
+}
+
+.switch-btn:hover {
+  background: #ffc107;
+  color: #000;
+}
+
+.error-message {
+  background: rgba(255, 0, 0, 0.2);
+  color: #fff;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-10px);}
+  to {opacity: 1; transform: translateY(0);}
+}

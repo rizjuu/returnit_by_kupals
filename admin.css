@@ -1,0 +1,160 @@
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Background & Layout */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('LRBG.png') center/cover no-repeat;
+  color: #fff;
+  min-height: 100vh;
+}
+/* Dashboard Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 85%;
+  margin: 30px auto;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-align: center;
+  padding: 25px 15px;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffcc33; /* Matches your golden accent */
+  margin-bottom: 10px;
+}
+
+.card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Header */
+h1 {
+  text-align: center;
+  font-size: 2.4rem;
+  margin-top: 30px;
+  font-weight: 700;
+  color: #ffcc33; /* Golden tone */
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Buttons */
+a.btn, a.logout {
+  display: inline-block;
+  margin: 15px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+a.btn {
+  background: #0d47a1; /* Deep blue */
+  color: #fff;
+}
+
+a.btn:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+a.logout {
+  background: #c62828;
+  color: #fff;
+}
+
+a.logout:hover {
+  background: #b71c1c;
+}
+
+/* Section Cards */
+section {
+  background: rgba(255, 255, 255, 0.08);
+  margin: 30px auto;
+  padding: 25px;
+  width: 85%;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+section h2 {
+  text-align: center;
+  color: #ffcc33;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+  text-align: center;
+}
+
+table th, table td {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 15px;
+}
+
+table th {
+  background: rgba(13, 71, 161, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+table tr:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transition: 0.3s;
+}
+
+/* Action Buttons */
+table a {
+  text-decoration: none;
+  font-size: 1.2rem;
+  margin: 0 5px;
+}
+
+table a[href*="approve"] {
+  color: #00e676;
+}
+
+table a[href*="reject"] {
+  color: #ff5252;
+}
+
+table a:hover {
+  opacity: 0.8;
+}
