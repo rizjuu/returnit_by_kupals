@@ -76,13 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
   <div class="container">
     <aside class="sidebar">
-      <h2>🏫 User Panel</h2>
+      <h2> User Panel</h2>
       <ul>
         <li><a href="user_page.php">All Items</a></li>
         <li><a href="report_item.php">Report Item</a></li>
         <li><a href="claim_item.php" class="active">Claim Item</a></li>
         <li><a href="claim_history.php">Claim History</a></li> 
-        <li><a href="notifications.php">🔔 Notifications</a></li>
       </ul>
       <a href="logout.php" class="logout-btn">Logout</a>
     </aside>
