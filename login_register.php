@@ -50,6 +50,16 @@ function isActiveForm($formName, $activeForm) {
         <input type="text" name="name" placeholder="Full Name" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Password" required>
+
+        <input type="text" name="student_id" placeholder="Student ID" required>
+  <input type="text" name="program" placeholder="Program (e.g. BSIT)" required>
+  <select name="year_level" required>
+    <option value="">Select Year Level</option>
+    <option value="1st Year">1st Year</option>
+    <option value="2nd Year">2nd Year</option>
+    <option value="3rd Year">3rd Year</option>
+    <option value="4th Year">4th Year</option>
+  </select>
         <button type="submit" name="register">Register</button>
         <p class="switch-text">Already have an account?</p>
         <button type="button" class="switch-btn" onclick="showForm('login-form')">Login</button>

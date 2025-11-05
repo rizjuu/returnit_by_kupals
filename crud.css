@@ -25,14 +25,14 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: linear-gradient(to bottom, rgba(135, 206, 235, 0.7), rgba(0, 191, 255, 0.8));
   z-index: -1;
 }
 
 /* HEADERS */
 h1 {
   text-align: center;
-  color: #ffcc33;
+  color: #f0f8ff;
   margin-top: 25px;
   font-size: 2.2rem;
   text-transform: uppercase;
@@ -55,12 +55,12 @@ a.back, .logout {
   text-decoration: none;
   font-weight: 600;
   color: #fff;
-  background: #0d47a1;
+  background: linear-gradient(to right, #00BFFF, #87CEEB);
   transition: 0.3s;
 }
 
 a.back:hover, .logout:hover {
-  background: #1565c0;
+  background: linear-gradient(to right, #87CEEB, #00BFFF);
 }
 
 /* SECTIONS */
@@ -76,7 +76,7 @@ section {
 }
 
 section h2 {
-  color: #ffcc33;
+  color: #f0f8ff;
   text-align: center;
   text-transform: uppercase;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -97,7 +97,7 @@ table th, table td {
 }
 
 table th {
-  color: #ffcc33;
+  color: #f0f8ff;
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -108,7 +108,7 @@ table tr:hover {
 table button {
   background: none;
   border: none;
-  color: #ffcc33;
+  color: #87CEEB;
   cursor: pointer;
   font-size: 1.1rem;
   transition: 0.3s;
@@ -142,7 +142,7 @@ table a[style*='color:red']:hover {
 
 .form-container h2 {
   text-align: center;
-  color: #ffcc33;
+  color: #f0f8ff;
   margin-bottom: 15px;
 }
 
@@ -155,7 +155,7 @@ table a[style*='color:red']:hover {
   border: none;
   outline: none;
   background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: #333; 
 }
 
 .form-container input::placeholder {
@@ -168,24 +168,26 @@ table a[style*='color:red']:hover {
   padding: 10px;
   border: none;
   border-radius: 6px;
-  background: #0d47a1;
+  background: linear-gradient(to right, #00BFFF, #87CEEB);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .form-container button:hover {
-  background: #1565c0;
+  background: linear-gradient(to right, #87CEEB, #00BFFF);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .form-container button[type="button"] {
-  background: #c62828;
+  background: #6c757d;
 }
 
 .form-container button[type="button"]:hover {
-  background: #b71c1c;
+  background: #5a6268;
 }
 
 /* EDIT MODAL */
@@ -203,6 +205,20 @@ table a[style*='color:red']:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
+/* FORM SELECT STYLES */
+select {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+select:focus {
+  outline-color: #007bff;
+}
 /* RESPONSIVE */
 @media (max-width: 768px) {
   h1 { font-size: 1.6rem; }

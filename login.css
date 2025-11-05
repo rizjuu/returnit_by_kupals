@@ -21,7 +21,7 @@ body {
 .bg-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: linear-gradient(to bottom, rgba(135, 206, 235, 0.6), rgba(0, 191, 255, 0.7));
   z-index: 0;
 }
 
@@ -40,7 +40,7 @@ body {
 .main-title {
   font-size: 22px;
   font-weight: 700;
-  color: #ffc107;
+  color: #f0f8ff;
   letter-spacing: 1px;
   margin-bottom: 5px;
 }
@@ -78,15 +78,18 @@ button {
   margin-top: 5px;
   border: none;
   border-radius: 8px;
-  background: #0d6efd;
+  background: linear-gradient(to right, #00BFFF, #87CEEB);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 button:hover {
-  background: #0b5ed7;
+  background: linear-gradient(to right, #87CEEB, #00BFFF);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .switch-text {
@@ -97,8 +100,8 @@ button:hover {
 
 .switch-btn {
   background: transparent;
-  border: 1px solid #ffc107;
-  color: #ffc107;
+  border: 1px solid #f0f8ff;
+  color: #f0f8ff;
   font-size: 13px;
   padding: 5px 12px;
   margin-top: 8px;
@@ -107,7 +110,7 @@ button:hover {
 }
 
 .switch-btn:hover {
-  background: #ffc107;
+  background: #f0f8ff;
   color: #000;
 }
 

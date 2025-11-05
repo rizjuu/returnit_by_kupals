@@ -25,11 +25,20 @@ $result = $stmt->get_result();
 if ($row = $result->fetch_assoc()) {
     // Verified, create user
     $stmt = $conn->prepare("
-        INSERT INTO users (name, email, password, role) 
-        VALUES (?, ?, ?, 'user')
-    ");
-    $stmt->bind_param("sss", $_SESSION['pending_name'], $_SESSION['pending_email'], $_SESSION['pending_password']);
-    $stmt->execute();
+    INSERT INTO users (name, email, password, student_id, program, year_level, role)
+    VALUES (?, ?, ?, ?, ?, ?, 'user')
+");
+$stmt->bind_param(
+    "ssssss",
+    $_SESSION['pending_name'],
+    $_SESSION['pending_email'],
+    $_SESSION['pending_password'],
+    $_SESSION['pending_student_id'],
+    $_SESSION['pending_program'],
+    $_SESSION['pending_year_level']
+);
+$stmt->execute();
+
 
     // Clean up
     $del = $conn->prepare("DELETE FROM email_verification WHERE email = ?");

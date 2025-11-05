@@ -75,16 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
   <div class="container">
-    <aside class="sidebar">
-      <h2> User Panel</h2>
-      <ul>
-        <li><a href="user_page.php">All Items</a></li>
-        <li><a href="report_item.php">Report Item</a></li>
-        <li><a href="claim_item.php" class="active">Claim Item</a></li>
-        <li><a href="claim_history.php">Claim History</a></li> 
-      </ul>
-      <a href="logout.php" class="logout-btn">Logout</a>
-    </aside>
+    <?php $active_page = 'claim_item'; include '_sidebar.php'; ?>
 
     <main class="main-content">
       <h2>📦 Claim an Item</h2>
@@ -103,5 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
     </main>
   </div>
+  <script src="sidebar.js"></script>
 </body>
 </html>

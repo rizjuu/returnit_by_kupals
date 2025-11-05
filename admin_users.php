@@ -56,74 +56,169 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-// Fetch all users
-$result = $conn->query("SELECT * FROM users ORDER BY id DESC");
+// Get search term if any
+$search_term = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+// Fetch users, filtering by name if a search term is provided
+if (!empty($search_term)) {
+    $search_query = "%" . $search_term . "%";
+    $stmt = $conn->prepare("SELECT * FROM users WHERE name LIKE ? ORDER BY id DESC");
+    $stmt->bind_param("s", $search_query);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    // Fetch all users if no search
+    $result = $conn->query("SELECT * FROM users ORDER BY id DESC");
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Manage Users</title>
-  <link rel="stylesheet" href="crud.css">
+  <link rel="stylesheet" href="user.css"> <!-- Re-using user.css for sidebar compatibility -->
+  <link rel="stylesheet" href="crud.css"> <!-- Keep crud.css for table and form styling -->
+  <style>
+    .search-container {
+      margin-bottom: 20px;
+    }
+    .search-form {
+      display: flex;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .search-form input {
+      flex-grow: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      outline: none;
+    }
+    .search-form input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .search-form button, .search-form .clear-search {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(to right, #00BFFF, #87CEEB);
+      color: white;
+      cursor: pointer;
+      text-decoration: none; /* For the 'Clear' link */
+    }
+    .admin-layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .admin-layout .form-container {
+      flex: 0 0 400px; /* Fixed width for the add form */
+    }
+    .admin-layout .users-table-container {
+      flex: 1; /* The table will take the remaining space */
+    }
+  </style>
 </head>
 <body>
-  <h1>Admin User Management</h1>
-  <a href="admin_page.php" class="back">← Back to Dashboard</a>
-  <a href="logout.php" class="logout">Logout</a>
+  <div class="container">
+    <?php $active_page = 'admin_users'; include '_admin_sidebar.php'; ?>
 
-  <section class="form-container">
-    <h2>Add New User</h2>
-    <form method="POST">
-      <input type="hidden" name="action" value="create">
-      <input type="text" name="name" placeholder="Full Name" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <select name="role">
-        <option value="user">User</option>
-        <option value="security">Security</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button type="submit">Add User</button>
-    </form>
-  </section>
+    <main class="main-content">
+      <h1>Admin User Management</h1>
 
-  <section>
-    <h2>Existing Users</h2>
-    <table>
-      <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
-      <?php while ($u = $result->fetch_assoc()): ?>
-      <tr>
-        <td><?= $u['id'] ?></td>
-        <td><?= htmlspecialchars($u['name']) ?></td>
-        <td><?= htmlspecialchars($u['email']) ?></td>
-        <td><?= htmlspecialchars($u['role']) ?></td>
-        <td>
-          <button onclick="editUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['name']) ?>', '<?= htmlspecialchars($u['email']) ?>', '<?= $u['role'] ?>')">✏️ Edit</button>
-          <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Delete this user?')" style="color:red;">🗑 Delete</a>
-        </td>
-      </tr>
-      <?php endwhile; ?>
-    </table>
-  </section>
+      <div class="admin-layout">
+        <section class="form-container">
+          <h2>Add New User</h2>
+          <form method="POST">
+            <input type="hidden" name="action" value="create">
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <select name="role" style="background: rgba(255, 255, 255, 0.2); color: white;">
+              <option value="user">User</option>
+              <option value="security">Security</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button type="submit">Add User</button>
+          </form>
+        </section>
 
-  <div id="editModal" class="form-container" style="display:none;">
-    <h2>Edit User</h2>
-    <form method="POST">
-      <input type="hidden" name="action" value="update">
-      <input type="hidden" name="id" id="editId">
-      <input type="text" name="name" id="editName" placeholder="Name" required>
-      <input type="email" name="email" id="editEmail" placeholder="Email" required>
-      <input type="password" name="password" placeholder="New Password (optional)">
-      <select name="role" id="editRole">
-        <option value="user">User</option>
-        <option value="security">Security</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button type="submit">Update</button>
-      <button type="button" onclick="closeModal()">Cancel</button>
-    </form>
+        <section class="users-table-container">
+          <h2>Existing Users</h2>
+          <!-- Search Bar -->
+          <div class="search-container">
+            <form method="GET" action="admin_users.php" class="search-form">
+              <input type="text" name="search" placeholder="Search by name..." value="<?= htmlspecialchars($search_term) ?>">
+              <button type="submit">Search</button>
+              <?php if (!empty($search_term)): ?>
+                <a href="admin_users.php" class="clear-search">Clear</a>
+              <?php endif; ?>
+            </form>
+          </div>
+          <table>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+            <?php while ($u = $result->fetch_assoc()): ?>
+            <tr>
+              <td><?= $u['id'] ?></td>
+              <td><?= htmlspecialchars($u['name']) ?></td>
+              <td><?= htmlspecialchars($u['email']) ?></td>
+              <td><?= htmlspecialchars($u['role']) ?></td>
+              <td>
+                <button onclick="editUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['name']) ?>', '<?= htmlspecialchars($u['email']) ?>', '<?= $u['role'] ?>')">✏️ Edit</button>
+                <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Delete this user?')" style="color:red;">🗑 Delete</a>
+              </td>
+            </tr>
+            <?php endwhile; ?>
+          </table>
+        </section>
+      </div>
+
+      <div id="editModal" class="form-container" style="display:none;">
+        <h2>Edit User</h2>
+        <form method="POST">
+          <input type="hidden" name="action" value="update">
+          <input type="hidden" name="id" id="editId">
+          <input type="text" name="name" id="editName" placeholder="Name" required>
+          <input type="email" name="email" id="editEmail" placeholder="Email" required>
+          <input type="password" name="password" placeholder="New Password (optional)">
+          <select name="role" id="editRole" style="background: rgba(255, 255, 255, 0.2); color: white;">
+            <option value="user">User</option>
+            <option value="security" >Security</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button type="submit">Update</button>
+          <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+      </div>
+    </main>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        // Check for saved sidebar state
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            });
+        }
+    });
+  </script>
 </body>
 </html>

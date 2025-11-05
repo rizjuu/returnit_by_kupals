@@ -37,7 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     elseif (isset($_POST['register'])) {
         // REGISTER
-        if (empty($name) || empty($email) || empty($password)) {
+        $student_id = trim($_POST['student_id'] ?? '');
+        $program = trim($_POST['program'] ?? '');
+        $year_level = trim($_POST['year_level'] ?? '');
+
+        if (empty($name) || empty($email) || empty($password) || empty($student_id) || empty($program) || empty($year_level)) {
             $_SESSION['register_error'] = "All fields are required.";
         } else {
             // Check if already registered
@@ -49,25 +53,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($check->num_rows > 0) {
                 $_SESSION['register_error'] = "Email already registered.";
             } else {
-                // Delete old OTPs for this email
+                // Delete any existing OTP for this email
                 $del = $conn->prepare("DELETE FROM email_verification WHERE email = ?");
                 $del->bind_param("s", $email);
                 $del->execute();
 
-                // Generate new OTP
+                // Generate OTP
                 $otp = rand(100000, 999999);
                 $expires = date("Y-m-d H:i:s", strtotime("+5 minutes"));
-
                 $stmt = $conn->prepare("INSERT INTO email_verification (email, otp_code, expires_at) VALUES (?, ?, ?)");
                 $stmt->bind_param("sss", $email, $otp, $expires);
                 $stmt->execute();
 
                 require_once 'send_otp.php';
                 if (sendVerificationOTP($email, $otp)) {
-                    // Store pending user info
+                    // Save pending user info temporarily
                     $_SESSION['pending_name'] = $name;
                     $_SESSION['pending_email'] = $email;
                     $_SESSION['pending_password'] = password_hash($password, PASSWORD_DEFAULT);
+                    $_SESSION['pending_student_id'] = $student_id;
+                    $_SESSION['pending_program'] = $program;
+                    $_SESSION['pending_year_level'] = $year_level;
 
                     header("Location: verify_otp.php");
                     exit;

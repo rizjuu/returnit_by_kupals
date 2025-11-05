@@ -45,16 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
   <div class="container">
-    <aside class="sidebar">
-      <h2>🏫 User Panel</h2>
-      <ul>
-        <li><a href="user_page.php">All Items</a></li>
-        <li><a href="report_item.php" class="active">Report Item</a></li>
-        <li><a href="claim_item.php">Claim Item</a></li>
-        <li><a href="claim_history.php">Claim History</a></li> 
-      </ul>
-      <a href="logout.php" class="logout-btn">Logout</a>
-    </aside>
+    <?php $active_page = 'report_item'; include '_sidebar.php'; ?>
 
     <main class="main-content">
       <h2>📋 Report Lost or Found Item</h2>
@@ -64,9 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <textarea name="description" placeholder="Description" rows="3"></textarea>
         <input type="text" name="location" placeholder="Location">
         <input type="date" name="date">
-        <select name="type">
-          <option value="lost">Lost</option>
-          <option value="found">Found</option>
+        <select name="type" >
+          <option value="" disabled selected hidden>-- Select Report Type --</option>
+          <option value="lost" required style="color: black;">I lost something</option>
+          <option value="found"required style="color: black;">I found something</option>
         </select>
         <input type="email" name="contact_info" placeholder="Your Email" required>
         <input type="file" name="image" accept="image/*">
@@ -74,5 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
     </main>
   </div>
+  <script src="script.js"></script>
+  <script src="sidebar.js"></script>
 </body>
 </html>
