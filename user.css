@@ -18,10 +18,13 @@ body {
 
 /* Sidebar */
 .sidebar {
+  position: fixed; /* Make sidebar float */
+  left: 0;
+  top: 0;
+  height: 100%;
   width: 250px;
   background: rgba(0, 0, 0, 0.6);
   padding: 30px 20px;
-  display: flex;
   flex-direction: column;
   justify-content: space-between;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -58,17 +61,35 @@ body {
   border-radius: 8px;
   text-decoration: none;
   transition: 0.3s;
+  display: block; /* Ensure it's a block element */
+  margin-top: 20px; /* Add some space from the list above */
 }
 
 .logout-btn:hover { background: #b02a37; }
 
+.logout-btn img.icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    filter: brightness(0) invert(1);
+}
+.user-header .profile-btn,
+.user-header .logout-btn-header {
+  padding: 5px 20px; /* Standardized padding */
+}
+
+.logout-btn-header .icon {
+  width: 40px; /* Match profile image width */
+  height: 40px; /* Match profile image height */
+}
 /* Main Content */
 .main-content {
-  flex: 1;
+  margin-left: 250px; /* Initial margin to account for sidebar */
   padding: 30px;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(10px);
   overflow-y: auto;
+  width: calc(100% - 250px); /* Adjust width */
   border-radius: 12px 0 0 12px;
 }
 
@@ -159,23 +180,23 @@ tr:hover { background-color: rgba(255, 255, 255, 0.1); }
 /* === Sidebar Toggle Styles === */
 .sidebar {
     transition: width 0.3s ease;
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    z-index: 1000; /* Ensure sidebar is on top */
 }
 .main-content {
-    transition: margin-left 0.3s ease;
-    flex-grow: 1;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    flex-grow: 1; /* Allow it to grow */
 }
 .sidebar.collapsed {
-    width: 80px; /* Increased width for better icon visibility */
+    width: 80px;
 }
-.sidebar.collapsed .title, .sidebar.collapsed .text {
-    display: none;
+.sidebar .text, .sidebar .title {
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    visibility: visible;
 }
 .sidebar.collapsed .sidebar-header {
     justify-content: center;
-}
-.sidebar.collapsed .icon {
-    margin-right: 0;
 }
 .sidebar.collapsed ul li a {
     justify-content: center;
@@ -194,19 +215,59 @@ tr:hover { background-color: rgba(255, 255, 255, 0.1); }
     display: inline-block;
     text-align: center;
 }
+.sidebar.collapsed .icon {
+    margin-right: 0;
+}
+.sidebar.collapsed .title, .sidebar.collapsed .text {
+    opacity: 0;
+    transition-delay: 0s; /* No delay when collapsing */
+    visibility: hidden;
+}
+/* When not collapsed, delay the text appearing to prevent scrambling */
+.sidebar:not(.collapsed) .text,
+.sidebar:not(.collapsed) .title {
+    transition-delay: 0.1s;
+}
 .toggle-btn {
     background: none;
     border: none;
     color: white;
     font-size: 20px;
     cursor: pointer;
-    padding: 0 15px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
 }
-.main-content.expanded {
-    margin-left: 0; /* Remove margin to eliminate the gap */
+.main-content.expanded { /* This class will now handle the collapsed state */
+    margin-left: 80px;
+    width: calc(100% - 80px);
 }
-.logout-btn .icon {
-    margin-right: 10px;
+.logout-btn-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+}
+
+.logout-btn-header:hover {
+  background-color: #b02a37;
+}
+
+
+/* === Sidebar Icon Styling === */
+.sidebar ul li a img.icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    filter: brightness(0) invert(1); /* Make icons white */
 }
 
 /* === Form Dropdown/Textarea Styles === */
@@ -244,4 +305,103 @@ tr:hover { background-color: rgba(255, 255, 255, 0.1); }
 .table-section tr:hover {
   background: rgba(135, 206, 235, 0.2);
   transition: 0.2s;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar ul {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+  }
+
+  .sidebar ul li {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar .logout-btn, #toggle-sidebar {
+    display: none; /* Hide these on mobile for a cleaner look */
+  }
+
+  .main-content {
+    padding: 20px;
+    border-radius: 0;
+  }
+
+  .user-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+}
+
+/* Notifications Page Specific Styles */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.notification-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border-radius: 10px;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer; /* Indicate it's clickable */
+}
+.notification-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+.notification-card.unread {
+  border-left: 5px solid #00BFFF;
+  background: rgba(0, 191, 255, 0.15); /* Slightly different background for unread */
+}
+.notification-card.unread::after {
+  content: 'NEW';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #00BFFF;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+.notification-card p {
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+.notification-card .time {
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.7);
+}
+.notification-card strong {
+    color: #00BFFF;
+}
+/* Hide the badge on the card itself when it's read */
+.notification-card:not(.unread)::after {
+    display: none;
 }

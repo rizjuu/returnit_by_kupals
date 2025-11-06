@@ -223,5 +223,11 @@ select:focus {
 @media (max-width: 768px) {
   h1 { font-size: 1.6rem; }
   section, .form-container { width: 95%; padding: 15px; }
-  table { font-size: 0.9rem; }
+  table { font-size: 0.8rem; } /* Further reduce font size for small screens */
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-layout .form-container {
+    flex: 1 1 auto; /* Allow it to grow and shrink */
+  }
 }

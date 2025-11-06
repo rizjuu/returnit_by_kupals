@@ -158,3 +158,20 @@ table a[href*="reject"] {
 table a:hover {
   opacity: 0.8;
 }
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  .cards {
+    width: 100%;
+    grid-template-columns: 1fr; /* Stack cards vertically */
+  }
+  section {
+    width: 100%;
+    padding: 15px;
+  }
+  table { font-size: 0.9rem; }
+  .action-links a { font-size: 1rem; }
+}

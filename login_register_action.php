@@ -23,6 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_email'] = $user['email'];
 
+                // Handle "Remember Me"
+                if (isset($_POST['remember_me']) && $_POST['remember_me'] == '1') {
+                    $selector = bin2hex(random_bytes(16));
+                    $token = random_bytes(32);
+                    $expires = new DateTime('+1 month');
+
+                    // Store token in database
+                    $stmt_token = $conn->prepare("INSERT INTO auth_tokens (user_id, selector, token, expires) VALUES (?, ?, ?, ?)");
+                    $hashed_token = hash('sha256', $token);
+                    $stmt_token->bind_param("isss", $user['id'], $selector, $hashed_token, $expires->format('Y-m-d H:i:s'));
+                    $stmt_token->execute();
+
+                    // Set cookie
+                    setcookie('remember_me', $selector . ':' . bin2hex($token), $expires->getTimestamp(), '/', '', false, true);
+                }
+
                 header("Location: " . ($user['role'] === 'admin' ? 'admin_page.php' : 'user_page.php'));
                 exit;
             } else {
@@ -40,8 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $student_id = trim($_POST['student_id'] ?? '');
         $program = trim($_POST['program'] ?? '');
         $year_level = trim($_POST['year_level'] ?? '');
+        $campus = trim($_POST['campus'] ?? '');
 
-        if (empty($name) || empty($email) || empty($password) || empty($student_id) || empty($program) || empty($year_level)) {
+        if (empty($name) || empty($email) || empty($password) || empty($student_id) || empty($program) || empty($year_level) || empty($campus)) {
             $_SESSION['register_error'] = "All fields are required.";
         } else {
             // Check if already registered
@@ -74,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['pending_student_id'] = $student_id;
                     $_SESSION['pending_program'] = $program;
                     $_SESSION['pending_year_level'] = $year_level;
+                    $_SESSION['pending_campus'] = $campus;
 
                     header("Location: verify_otp.php");
                     exit;

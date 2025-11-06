@@ -12,9 +12,15 @@ $totalUsers = $conn->query("SELECT COUNT(*) AS cnt FROM users")->fetch_assoc()['
 $totalItems = $conn->query("SELECT COUNT(*) AS cnt FROM items")->fetch_assoc()['cnt'] ?? 0;
 $activeItems = $conn->query("SELECT COUNT(*) AS cnt FROM items WHERE status='active'")->fetch_assoc()['cnt'] ?? 0;
 $pendingClaims = $conn->query("SELECT COUNT(*) AS cnt FROM claims WHERE status='pending'")->fetch_assoc()['cnt'] ?? 0;
+$pendingFoundReports = $conn->query("SELECT COUNT(*) AS cnt FROM found_reports WHERE status='pending'")->fetch_assoc()['cnt'] ?? 0;
 
 // Fetch all active items
-$items = $conn->query("SELECT * FROM items WHERE status='active' ORDER BY created_at DESC");
+$items = $conn->query("
+  SELECT i.*, u.name as reporter_name 
+  FROM items i
+  LEFT JOIN users u ON i.reporter_email = u.email
+  WHERE i.status = 'active' ORDER BY i.created_at DESC
+");
 
 // Fetch pending claims
 $claims = $conn->query("
@@ -22,6 +28,15 @@ $claims = $conn->query("
   FROM claims c 
   JOIN items i ON c.item_id = i.id
   WHERE c.status = 'pending'
+");
+
+// Fetch pending found reports
+$found_reports = $conn->query("
+    SELECT fr.id, i.title, u.name as finder_name, u.email as finder_email, fr.description, fr.proof_image
+    FROM found_reports fr
+    JOIN items i ON fr.item_id = i.id
+    JOIN users u ON fr.finder_user_id = u.id
+    WHERE fr.status = 'pending'
 ");
 
 $alert = $_SESSION['alert'] ?? '';
@@ -53,6 +68,7 @@ unset($_SESSION['alert']);
         <div class="card"><h3>Total Items</h3><div class="value"><?= (int)$totalItems; ?></div></div>
         <div class="card"><h3>Active Items</h3><div class="value"><?= (int)$activeItems; ?></div></div>
         <div class="card"><h3>Pending Claims</h3><div class="value"><?= (int)$pendingClaims; ?></div></div>
+        <div class="card"><h3>Pending Found Reports</h3><div class="value"><?= (int)$pendingFoundReports; ?></div></div>
       </div>
 
       <!-- ITEMS TABLE -->
@@ -60,7 +76,7 @@ unset($_SESSION['alert']);
         <h2>📦 Items Reported</h2>
         <table>
           <tr>
-            <th>ID</th>
+            <th>Reporter</th>
             <th>Image</th>
             <th>Title</th>
             <th>Type</th>
@@ -68,7 +84,7 @@ unset($_SESSION['alert']);
           </tr>
           <?php while($i = $items->fetch_assoc()): ?>
           <tr>
-            <td><?= $i['id'] ?></td>
+            <td><?= htmlspecialchars($i['reporter_name'] ?? 'N/A') ?></td>
             <td>
               <?php if (!empty($i['image']) && file_exists($i['image'])): ?>
                 <button class="view-btn" onclick="viewImage('<?= htmlspecialchars($i['image']) ?>')">🔍 View</button>
@@ -124,6 +140,42 @@ unset($_SESSION['alert']);
         </tr>
         <?php endwhile; ?>
       </table>
+    </section>
+
+      <!-- PENDING FOUND REPORTS TABLE -->
+      <section>
+        <h2>🤝 Pending Found Reports</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Report ID</th>
+              <th>Item Title</th>
+              <th>Finder</th>
+              <th>Finder's Description</th>
+              <th>Proof</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while($fr = $found_reports->fetch_assoc()): ?>
+            <tr>
+              <td><?= $fr['id'] ?></td>
+              <td><?= htmlspecialchars($fr['title']) ?></td>
+              <td><?= htmlspecialchars($fr['finder_name']) ?><br><small><?= htmlspecialchars($fr['finder_email']) ?></small></td>
+              <td><?= htmlspecialchars($fr['description']) ?></td>
+              <td>
+                <?php if (!empty($fr['proof_image']) && file_exists($fr['proof_image'])): ?>
+                  <button class="view-btn" onclick="viewImage('<?= htmlspecialchars($fr['proof_image']) ?>')">🔍 View</button>
+                <?php endif; ?>
+              </td>
+              <td class="action-links">
+                <a href="admin_found_action.php?action=approve&id=<?= $fr['id'] ?>" onclick="return confirm('Approve this report? This will notify both users.')">✅</a>
+                <a href="admin_found_action.php?action=reject&id=<?= $fr['id'] ?>" onclick="return confirm('Reject this report?')">❌</a>
+              </td>
+            </tr>
+            <?php endwhile; ?>
+          </tbody>
+        </table>
     </section>
     </main>
   </div>

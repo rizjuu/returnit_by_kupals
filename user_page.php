@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once 'auth_check.php'; // Auto-login check
+
 require_once 'config.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: login_register.php");
@@ -21,12 +23,22 @@ $search_term = isset($_GET['search']) ? trim($_GET['search']) : '';
 // Fetch active items, filtering by title if a search term is provided
 if (!empty($search_term)) {
     $search_query = "%" . $search_term . "%";
-    $stmt = $conn->prepare("SELECT * FROM items WHERE status='active' AND title LIKE ? ORDER BY created_at DESC");
+    $stmt = $conn->prepare("
+      SELECT i.*, u.name as reporter_name 
+      FROM items i 
+      LEFT JOIN users u ON i.reporter_email = u.email 
+      WHERE i.status='active' AND i.title LIKE ? 
+      ORDER BY i.created_at DESC
+    ");
     $stmt->bind_param("s", $search_query);
     $stmt->execute();
     $items = $stmt->get_result();
 } else {
-    $items = $conn->query("SELECT * FROM items WHERE status='active' ORDER BY created_at DESC");
+    $items = $conn->query("
+      SELECT i.*, u.name as reporter_name 
+      FROM items i LEFT JOIN users u ON i.reporter_email = u.email 
+      WHERE i.status='active' ORDER BY i.created_at DESC
+    ");
 }
 ?>
 <!DOCTYPE html>
@@ -53,11 +65,12 @@ if (!empty($search_term)) {
       display: flex;
       align-items: center;
       gap: 10px;
-      background-color: #007bff;
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
       color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 50px; /* Pill shape */
       cursor: pointer;
       font-weight: 600;
       transition: background-color 0.3s ease;
@@ -71,7 +84,39 @@ if (!empty($search_term)) {
       vertical-align: middle;
     }
     .profile-btn:hover {
-      background-color: #0056b3;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* === Profile Dropdown === */
+    .profile-container {
+      position: relative;
+      display: inline-block;
+    }
+    .profile-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: rgba(30, 40, 50, 0.9);
+      backdrop-filter: blur(10px);
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+      z-index: 1;
+      border-radius: 10px;
+      overflow: hidden; /* Ensures children conform to border-radius */
+    }
+    .profile-dropdown-content a {
+      color: white;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      transition: background-color 0.2s;
+    }
+    .profile-dropdown-content a:hover {
+      background-color: rgba(0, 191, 255, 0.3);
+    }
+    .show {
+      display: block;
+      animation: fadeIn 0.3s;
     }
 
     /* === Search Section === */
@@ -110,36 +155,14 @@ if (!empty($search_term)) {
 </head>
 <body>
   <div class="container">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2><span class="icon">🧭</span> <span class="title">Campus L&F</span></h2>
-        <button id="toggle-sidebar" class="toggle-btn">↔</button>
-      </div>
-      <ul>
-        <li><a href="user_page.php" class="active"><span class="icon">📄</span> <span class="text">All Items</span></a></li>
-        <li><a href="report_item.php"><span class="icon">✏️</span> <span class="text">Report Item</span></a></li>
-        <li><a href="claim_item.php"><span class="icon">🙌</span> <span class="text">Claim Item</span></a></li>
-        <li><a href="claim_history.php"><span class="icon">📜</span> <span class="text">Claim History</span></a></li> 
-        <li><a href="notifications.php"><span class="icon">🔔</span> <span class="text">Notifications</span> 
-<?php
-$count = $conn->query("SELECT COUNT(*) AS c FROM notifications WHERE user_id={$_SESSION['user_id']} AND status='unread'")->fetch_assoc()['c'];
-if ($count > 0) echo "<span class='badge'>$count</span>";
-?>
-</a></li>
-      </ul>
-      <a href="logout.php" class="logout-btn"><span class="icon">🚪</span> <span class="text">Logout</span></a>
-    </aside>
+    <?php $active_page = 'user_page'; include '_sidebar.php'; ?>
 
     <main class="main-content">
       <header class="user-header">
         <div class="welcome-user">
           <h1>Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
-          <button class="profile-btn" onclick="toggleProfile()">
-            <img src="<?= $profile_image_url ?>" alt="Profile" class="profile-btn-img">
-            <span>Profile</span>
-          </button>
         </div>
-        <div class="header-right">
+        <div class="header-actions">
           <form method="GET" action="user_page.php" class="search-form">
             <input type="text" name="search" placeholder="Search items by title..." value="<?= htmlspecialchars($search_term) ?>">
             <button type="submit">🔍</button>
@@ -147,26 +170,37 @@ if ($count > 0) echo "<span class='badge'>$count</span>";
               <a href="user_page.php" class="clear-search">Clear</a>
             <?php endif; ?>
           </form>
+          <div class="profile-container">
+            <button onclick="toggleDropdown()" class="profile-btn">
+              <img src="<?= $profile_image_url ?>" alt="Profile" class="profile-btn-img">
+              <span><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+            </button>
+            <div id="myDropdown" class="profile-dropdown-content">
+              <a href="profile.php">👤 Profile</a>
+              <a href="logout.php">🚪 Logout</a>
+            </div>
+          </div>
         </div>
-      </header>
+      </header> <!-- This was missing -->
 
       <section class="table-section">
         <table>
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Reporter</th>
               <th>Image</th>
               <th>Title</th>
               <th>Type</th>
               <th>Location</th>
               <th>Date</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             <?php while($row = $items->fetch_assoc()): ?>
             <tr>
-              <td><?= $row['id'] ?></td>
+              <td><?= htmlspecialchars($row['reporter_name'] ?? 'N/A') ?></td>
               <td>
   <?php if (!empty($row['image']) && file_exists($row['image'])): ?>
     <button class="view-btn" onclick="viewImage('<?= htmlspecialchars($row['image']) ?>')">🔍 View</button>
@@ -179,6 +213,13 @@ if ($count > 0) echo "<span class='badge'>$count</span>";
               <td><?= htmlspecialchars($row['location']) ?></td>
               <td><?= $row['date_lost_found'] ?></td>
               <td><span class="badge"><?= ucfirst($row['status']) ?></span></td>
+              <td>
+                <?php if ($row['type'] === 'lost' && $row['status'] === 'active'): ?>
+                  <a href="report_found_item.php?item_id=<?= $row['id'] ?>" class="view-btn found-it-btn">Found It</a>
+                <?php elseif ($row['type'] === 'found' && $row['status'] === 'active'): ?>
+                  <a href="claim_item.php?item_id=<?= $row['id'] ?>" class="view-btn claim-now-btn">Claim</a>
+                <?php endif; ?>
+              </td>
             </tr>
             <?php endwhile; ?>
           </tbody>
@@ -202,6 +243,25 @@ function viewImage(src) {
 function closeModal() {
   document.getElementById('imageModal').style.display = 'none';
 }
+
+/* === Dropdown Logic === */
+function toggleDropdown() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.profile-btn, .profile-btn *')) {
+    var dropdowns = document.getElementsByClassName("profile-dropdown-content");
+    for (var i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
 </script>
 
 <style>
@@ -237,12 +297,38 @@ function closeModal() {
 .view-btn:hover {
   background:#e6b800;
 }
-</style>
-<script>
-function toggleProfile() {
-  window.location.href = "profile.php";
+.found-it-btn {
+    background: linear-gradient(to right, #00BFFF, #87CEEB);
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
 }
-</script>
+.found-it-btn:hover {
+    background: linear-gradient(to right, #87CEEB, #00BFFF);
+    transform: translateY(-1px);
+}
+.claim-now-btn {
+    background: linear-gradient(to right, #ff8c00, #ffc107);
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+.claim-now-btn:hover {
+    background: linear-gradient(to right, #ffc107, #ff8c00);
+    transform: translateY(-1px);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
 <script src="sidebar.js"></script>
 
 

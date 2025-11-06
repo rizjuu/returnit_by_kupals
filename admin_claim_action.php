@@ -34,6 +34,13 @@ if ($action === 'approve') {
     // ❌ Set related item to inactive
     $conn->query("UPDATE items SET status='inactive' WHERE id={$claim['item_id']}");
 
+    // Fetch item title for the approval notification message
+    $item_title_stmt = $conn->prepare("SELECT title FROM items WHERE id = ?");
+    $item_title_stmt->bind_param("i", $claim['item_id']);
+    $item_title_stmt->execute();
+    $item_title_result = $item_title_stmt->get_result()->fetch_assoc();
+    $item_title = $item_title_result['title'] ?? 'an item'; // Default if title not found
+
     // 🔍 Get user_id via email (more reliable)
     $user_stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
     $user_stmt->bind_param("s", $claim['claimant_email']);
@@ -49,7 +56,7 @@ if ($action === 'approve') {
         $history->execute();
 
         // 🔔 Create a notification for the user
-        $message = "✅ Your claim for item '{$claim['claimant_name']}' has been approved! You can now claim it at the Security Desk.";
+        $message = "✅ Your claim for item '{$item_title}' has been approved! You can now claim it at the Security Desk.";
         $notif = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
         $notif->bind_param("is", $user_id, $message);
         $notif->execute();
@@ -78,6 +85,14 @@ if ($action === 'approve') {
     if ($user_result) {
         $user_id = $user_result['id'];
         $message = "❌ Your claim for item '{$claim['claimant_name']}' was rejected by the admin.";
+        // Fetch item title for the rejection notification message
+        $item_title_stmt = $conn->prepare("SELECT title FROM items WHERE id = ?");
+        $item_title_stmt->bind_param("i", $claim['item_id']);
+        $item_title_stmt->execute();
+        $item_title_result = $item_title_stmt->get_result()->fetch_assoc();
+        $item_title = $item_title_result['title'] ?? 'an item'; // Default if title not found
+
+        $message = "❌ Your claim for item '{$item_title}' was rejected by the admin.";
         $notif = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
         $notif->bind_param("is", $user_id, $message);
         $notif->execute();

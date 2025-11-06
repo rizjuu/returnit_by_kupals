@@ -82,3 +82,13 @@ body, html {
   color: #ddd;
   z-index: 2;
 }
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 600px) {
+  .title {
+    font-size: 2rem;
+  }
+  .subtitle {
+    font-size: 1rem;
+  }
+}

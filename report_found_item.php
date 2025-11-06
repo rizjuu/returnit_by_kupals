@@ -7,61 +7,44 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$item_id_from_get = $_GET['item_id'] ?? null;
-$item_title = null;
+$item_id = $_GET['item_id'] ?? null;
+if (!$item_id) {
+    header("Location: user_page.php");
+    exit;
+}
 
-if ($item_id_from_get) {
-    // Fetch item details to display
-    $stmt = $conn->prepare("SELECT title FROM items WHERE id = ? AND type = 'found'");
-    $stmt->bind_param("i", $item_id_from_get);
-    $stmt->execute();
-    $item = $stmt->get_result()->fetch_assoc();
+// Fetch item details to display
+$stmt = $conn->prepare("SELECT title FROM items WHERE id = ? AND type = 'lost'");
+$stmt->bind_param("i", $item_id);
+$stmt->execute();
+$item = $stmt->get_result()->fetch_assoc();
 
-    if ($item) {
-        $item_title = $item['title'];
-    }
+if (!$item) {
+    // Item not found or is not a 'lost' item
+    header("Location: user_page.php");
+    exit;
 }
 
 $msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $item_id = $_POST['item_id'] ?? null;
-    $claimant_name = $_SESSION['user_name'] ?? 'Unknown User';
-    $claimant_email = $_SESSION['user_email'] ?? 'unknown@user.com';
-    $message = $_POST['message'] ?? '';
+    $finder_id = $_SESSION['user_id'];
+    $description = $_POST['description'] ?? '';
     $proofPath = null;
 
-    // 🔹 Check if user has already claimed this item
-    $check_claim = $conn->prepare("SELECT id FROM claims WHERE item_id = ? AND claimant_email = ?");
-    $check_claim->bind_param("is", $item_id, $claimant_email);
-    $check_claim->execute();
-    if ($check_claim->get_result()->num_rows > 0) {
-        $msg = '⚠️ You have already submitted a claim for this item. Please check your Claim History.';
+    // 🔹 Check if user has already reported this item as found
+    $check_report = $conn->prepare("SELECT id FROM found_reports WHERE item_id = ? AND finder_user_id = ?");
+    $check_report->bind_param("ii", $item_id, $finder_id);
+    $check_report->execute();
+    if ($check_report->get_result()->num_rows > 0) {
+        $msg = '⚠️ You have already reported this item as found. The owner will be notified once the admin approves your report.';
         // To prevent further execution and just show the message, we stop here.
         goto end_of_post;
     }
-    $check_claim->close();
+    $check_report->close();
 
-    // 🔹 Check if item exists and is FOUND
-    $check = $conn->prepare("SELECT type FROM items WHERE id = ?");
-    $check->bind_param("i", $item_id);
-    $check->execute();
-    $result = $check->get_result();
-
-    if ($result->num_rows === 0) {
-        $msg = '❌ Item not found. Please check the Item ID.';
-        exit;
-    }
-
-    $item = $result->fetch_assoc();
-    if ($item['type'] === 'lost') {
-        $msg = '❌ You can only claim items that are marked as FOUND.';
-        exit;
-    }
-
-    // 🔹 Handle proof image upload
+    // Handle proof image upload
     if (isset($_FILES['proof_image']) && $_FILES['proof_image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = 'uploads/proofs/';
+        $uploadDir = 'uploads/found_proofs/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -71,25 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($_FILES['proof_image']['tmp_name'], $targetFile)) {
             $proofPath = $targetFile;
         } else {
-            $msg = '❌ Failed to upload proof image.';
-            exit;
+            $msg = "❌ Failed to upload proof image.";
         }
-    } else {
-        $msg = '❌ Please upload a proof image.';
-        exit;
     }
 
-    // 🔹 Insert claim into database
-    $stmt = $conn->prepare("
-        INSERT INTO claims (item_id, claimant_name, claimant_email, proof_image, message, status, created_at)
-        VALUES (?, ?, ?, ?, ?, 'pending', NOW())
-    ");
-    $stmt->bind_param("issss", $item_id, $claimant_name, $claimant_email, $proofPath, $message);
+    if (empty($msg)) {
+        // Insert into the new found_reports table
+        $stmt = $conn->prepare("INSERT INTO found_reports (item_id, finder_user_id, description, proof_image) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiss", $item_id, $finder_id, $description, $proofPath);
 
-    if ($stmt->execute()) {
-        echo "<script>alert('✅ Claim submitted successfully! Please wait for admin approval.'); window.location.href='claim_history.php';</script>";
-    } else {
-        $msg = '❌ Failed to submit claim. Please try again.';
+        if ($stmt->execute()) {
+            echo "<script>alert('✅ Thank you for your report! The admin will review it and notify the owner.'); window.location.href='user_page.php';</script>";
+            exit;
+        } else {
+            $msg = "❌ Failed to submit report. Please try again.";
+        }
     }
 
     end_of_post: // Label to jump to for displaying messages without exiting
@@ -100,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Claim Item - Campus Lost & Found</title>
+  <title>Report Found Item - Campus Lost & Found</title>
   <link rel="stylesheet" href="user.css"> <!-- For .glass-form styles -->
   <style>
     body {
@@ -186,25 +165,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="modal-container">
     <a href="user_page.php" class="back-btn">⬅ Back</a>
 
-    <?php if ($item_title): ?>
-      <h2>📦 Claiming: "<?= htmlspecialchars($item_title) ?>"</h2>
-    <?php else: ?>
-      <h2>📦 Claim an Item</h2>
-    <?php endif; ?>
+    <h2>🤝 You Found: "<?= htmlspecialchars($item['title']) ?>"</h2>
+    <p>Thank you for helping a fellow student! Please provide some details below.</p>
 
     <?php if ($msg) echo "<p class='alert'>$msg</p>"; ?>
 
     <form method="POST" enctype="multipart/form-data" class="glass-form">
-      <label for="item_id">Item ID:</label>
-      <input type="number" name="item_id" id="item_id" value="<?= htmlspecialchars($item_id_from_get ?? '') ?>" required <?= $item_id_from_get ? 'readonly' : '' ?>>
+      <input type="hidden" name="item_id" value="<?= htmlspecialchars($item_id) ?>">
 
-      <label for="proof_image">Upload Proof of Ownership (e.g., photo, receipt):</label>
-      <input type="file" name="proof_image" id="proof_image" accept="image/*" required>
+      <label for="description">Where did you find it? (e.g., Library 2nd floor, near the cafe)</label>
+      <textarea name="description" id="description" rows="4" placeholder="Provide details here..." required></textarea>
 
-      <label for="message">Message (optional):</label>
-      <textarea name="message" id="message" rows="3" placeholder="Additional info about your claim..."></textarea>
+      <label for="proof_image">Upload a Photo (Optional, but helpful)</label>
+      <input type="file" name="proof_image" id="proof_image" accept="image/*">
 
-      <button type="submit">Submit Claim</button>
+      <button type="submit">Submit Found Report</button>
     </form>
 
     <div class="spinner-overlay">

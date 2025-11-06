@@ -15,15 +15,12 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <h2><span class="icon">🧭</span> <span class="title">Campus L&F</span></h2>
-    <button id="toggle-sidebar" class="toggle-btn">↔</button>
+    <button id="toggle-sidebar" class="toggle-btn">☰</button>
   </div>
   <ul>
-    <li><a href="user_page.php" class="<?= ($active_page === 'user_page') ? 'active' : '' ?>"><span class="icon">📄</span> <span class="text">All Items</span></a></li>
-    <li><a href="report_item.php" class="<?= ($active_page === 'report_item') ? 'active' : '' ?>"><span class="icon">✏️</span> <span class="text">Report Item</span></a></li>
-    <li><a href="claim_item.php" class="<?= ($active_page === 'claim_item') ? 'active' : '' ?>"><span class="icon">🙌</span> <span class="text">Claim Item</span></a></li>
-    <li><a href="claim_history.php" class="<?= ($active_page === 'claim_history') ? 'active' : '' ?>"><span class="icon">📜</span> <span class="text">Claim History</span></a></li>
-    <li><a href="notifications.php" class="<?= ($active_page === 'notifications') ? 'active' : '' ?>"><span class="icon">🔔</span> <span class="text">Notifications</span> <?php if ($notification_count > 0) echo "<span class='badge'>$notification_count</span>"; ?></a></li>
+    <li><a href="user_page.php" class="<?= ($active_page === 'user_page') ? 'active' : '' ?>"><img src="icons/dashboard.png" alt="All Items" class="icon"><span class="text">All Items</span></a></li>
+    <li><a href="report_item.php" class="<?= ($active_page === 'report_item') ? 'active' : '' ?>"><img src="icons/report.png" alt="Report Item" class="icon"><span class="text">Report Item</span></a></li>
+    <li><a href="claim_history.php" class="<?= ($active_page === 'claim_history') ? 'active' : '' ?>"><img src="icons/history.png" alt="Claim History" class="icon"><span class="text">Claim History</span></a></li>
+    <li><a href="notifications.php" class="<?= ($active_page === 'notifications') ? 'active' : '' ?>"><img src="icons/notification.png" alt="Notifications" class="icon"><span class="text">Notifications</span> <?php if ($notification_count > 0) echo "<span class='badge'>$notification_count</span>"; ?></a></li>
   </ul>
-  <a href="logout.php" class="logout-btn"><span class="icon">🚪</span> <span class="text">Logout</span></a>
 </aside>

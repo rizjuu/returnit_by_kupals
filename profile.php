@@ -18,6 +18,12 @@ $user = $stmt->get_result()->fetch_assoc();
   <meta charset="UTF-8">
   <title>My Profile</title>
   <link rel="stylesheet" href="user.css">
+  <script>
+    // Add a query parameter to the URL to prevent showing stale data
+    if (window.location.search.includes('upload=success')) {
+      window.history.replaceState(null, null, window.location.pathname);
+    }
+  </script>
   <style>
    body {
       font-family: "Poppins", sans-serif;
@@ -122,9 +128,10 @@ $user = $stmt->get_result()->fetch_assoc();
     }
 
     .info-box {
-      background: rgba(255, 255, 255, 0.15);
       padding: 15px;
       border-radius: 10px;
+      background: transparent; /* Remove background when not editing */
+      transition: background-color 0.3s ease;
     }
 
     .info-box strong {
@@ -156,6 +163,35 @@ $user = $stmt->get_result()->fetch_assoc();
       pointer-events: none; /* Prevent interaction with the iframe */
       filter: blur(10px); /* Apply a blur effect */
     }
+    
+    .editing .info-box {
+        background: rgba(255, 255, 255, 0.15); /* Add background only when editing */
+    }
+
+
+    .edit-btn {
+        background: #ffc107;
+        color: #333;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    .edit-btn:hover { background: #e0a800; }
+
+    .save-btn, .cancel-btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    .save-btn { background: #28a745; color: white; }
+    .cancel-btn { background: #dc3545; color: white; margin-left: 10px; }
+
   </style>
 </head>
 <body>
@@ -175,27 +211,64 @@ $user = $stmt->get_result()->fetch_assoc();
       </form>
       </div>
     </div>
-
-    <div class="profile-details">
-      <h2>🎓 Student Information</h2>
-      <div class="info-grid">
-        <div class="info-box">
-          <strong>Student ID</strong>
-          <span><?= htmlspecialchars($user['student_id'] ?? 'Not set') ?></span>
+    <form action="update_profile.php" method="POST">
+      <div class="profile-details">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>🎓 Student Information</h2>
+            <div>
+                <button type="button" class="edit-btn" id="edit-profile-btn" onclick="toggleEdit(true)">✏️ Edit</button>
+                <button type="submit" class="save-btn" id="save-changes-btn" style="display: none;">Save Changes</button>
+                <button type="button" class="cancel-btn" id="cancel-changes-btn" style="display: none;" onclick="toggleEdit(false)">Cancel</button>
+            </div>
         </div>
-        <div class="info-box">
-          <strong>Program</strong>
-          <span><?= htmlspecialchars($user['program'] ?? 'Not set') ?></span>
-        </div>
-        <div class="info-box">
-          <strong>Year Level</strong>
-          <span><?= htmlspecialchars($user['year_level'] ?? 'Not set') ?></span>
+        <div class="info-grid">
+          <div class="info-box">
+            <strong>Full Name</strong>
+            <span class="view-mode"><?= htmlspecialchars($user['name']) ?></span>
+            <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" class="edit-mode" style="display:none; width: 95%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
+          </div>
+          <div class="info-box">
+            <strong>Student ID</strong>
+            <span class="view-mode"><?= htmlspecialchars($user['student_id'] ?? 'Not set') ?></span>
+            <input type="text" name="student_id" value="<?= htmlspecialchars($user['student_id'] ?? '') ?>" class="edit-mode" style="display:none; width: 95%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
+          </div>
+          <div class="info-box">
+            <strong>Program</strong>
+            <span class="view-mode"><?= htmlspecialchars($user['program'] ?? 'Not set') ?></span>
+            <input type="text" name="program" value="<?= htmlspecialchars($user['program'] ?? '') ?>" class="edit-mode" style="display:none; width: 95%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
+          </div>
+          <div class="info-box">
+            <strong>Year Level</strong>
+            <span class="view-mode"><?= htmlspecialchars($user['year_level'] ?? 'Not set') ?></span>
+            <select name="year_level" class="edit-mode" style="display:none; width: 100%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
+                <option value="1st Year" <?= ($user['year_level'] ?? '') === '1st Year' ? 'selected' : '' ?>>1st Year</option>
+                <option value="2nd Year" <?= ($user['year_level'] ?? '') === '2nd Year' ? 'selected' : '' ?>>2nd Year</option>
+                <option value="3rd Year" <?= ($user['year_level'] ?? '') === '3rd Year' ? 'selected' : '' ?>>3rd Year</option>
+                <option value="4th Year" <?= ($user['year_level'] ?? '') === '4th Year' ? 'selected' : '' ?>>4th Year</option>
+            </select>
+          </div>
+          <div class="info-box">
+            <strong>Campus</strong>
+            <span class="view-mode"><?= htmlspecialchars($user['campus'] ?? 'Not set') ?></span>
+            <input type="text" name="campus" value="<?= htmlspecialchars($user['campus'] ?? '') ?>" class="edit-mode" style="display:none; width: 95%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   </div>
+
    <!-- Embed user_page.php as a blurred background -->
   <iframe id="userPageBackground" src="user_page.php" title="Background"></iframe>
 
+  <script>
+    function toggleEdit(isEditing) {
+      document.querySelectorAll('.view-mode').forEach(el => el.style.display = isEditing ? 'none' : 'block');
+      document.querySelectorAll('.edit-mode').forEach(el => el.style.display = isEditing ? 'block' : 'none');
+      document.getElementById('edit-profile-btn').style.display = isEditing ? 'none' : 'inline-block';
+      document.getElementById('save-changes-btn').style.display = isEditing ? 'inline-block' : 'none';
+      document.getElementById('cancel-changes-btn').style.display = isEditing ? 'inline-block' : 'none';
+      document.querySelector('.profile-details').classList.toggle('editing', isEditing);
+    }
+  </script>
 </body>
 </html>
