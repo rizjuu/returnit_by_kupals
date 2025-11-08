@@ -81,11 +81,67 @@ $stmt->execute();
         </div>
         <button type="submit">Verify</button>
         <p class="switch-text" style="margin-top: 15px;">
-          <a href="login_register.php" style="color:#fff; text-decoration:underline;">← Back to Login/Register</a>
+          Didn't receive the code? 
+          <a href="#" id="resend-link" style="color:#fff; text-decoration:underline; display:none;">Resend OTP</a>
+          <span id="resend-timer" style="color:#ccc;"></span>
         </p>
       </form>
     </div>
   </div>
   <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resendLink = document.getElementById('resend-link');
+        const resendTimer = document.getElementById('resend-timer');
+        let countdown = 300; // 5 minutes in seconds
+
+        function startTimer() {
+            resendLink.style.display = 'none';
+            resendTimer.style.display = 'inline';
+
+            const interval = setInterval(() => {
+                countdown--;
+                const minutes = Math.floor(countdown / 60);
+                const seconds = countdown % 60;
+                resendTimer.textContent = `Resend in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    resendTimer.style.display = 'none';
+                    resendLink.style.display = 'inline';
+                    countdown = 300; // Reset for next time
+                }
+            }, 1000);
+        }
+
+        startTimer(); // Start timer on page load
+
+        resendLink.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            fetch('resend_otp.php')
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message); // Show success or error message from server
+                    if (data.success) {
+                        startTimer(); // Restart the timer only on success
+                    }
+                }).catch(error => alert('An error occurred. Please try again.'));
+        });
+    });
+
+    // Prevent back button from leaving the page
+    (function (window, location) {
+        history.replaceState(null, document.title, location.pathname + "#!/stealingyourhistory");
+        history.pushState(null, document.title, location.pathname);
+        window.addEventListener("popstate", function () {
+            if (location.hash === "#!/stealingyourhistory") {
+                history.replaceState(null, document.title, location.pathname);
+                setTimeout(function () {
+                    location.replace("verify_otp.php");
+                }, 0);
+            }
+        }, false);
+    }(window, location));
+  </script>
 </body>
 </html>

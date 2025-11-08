@@ -140,9 +140,9 @@ if (!empty($search_term)) {
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
             <select name="role" style="background: rgba(255, 255, 255, 0.2); color: white;">
-              <option value="user">User</option>
-              <option value="security">Security</option>
-              <option value="admin">Admin</option>
+              <option value="user" style="color: black;">User</option>
+              <option value="security" style="color: black;">Security</option>
+              <option value="admin" style="color: black;">Admin</option>
             </select>
             <button type="submit">Add User</button>
           </form>
@@ -160,17 +160,17 @@ if (!empty($search_term)) {
               <?php endif; ?>
             </form>
           </div>
-          <table>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+          <table id="users-table">
+            <tr><th>Student ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
             <?php while ($u = $result->fetch_assoc()): ?>
             <tr>
-              <td><?= $u['id'] ?></td>
+              <td><?= htmlspecialchars($u['student_id'] ?? 'N/A') ?></td>
               <td><?= htmlspecialchars($u['name']) ?></td>
               <td><?= htmlspecialchars($u['email']) ?></td>
               <td><?= htmlspecialchars($u['role']) ?></td>
               <td>
-                <button onclick="editUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['name']) ?>', '<?= htmlspecialchars($u['email']) ?>', '<?= $u['role'] ?>')">✏️ Edit</button>
-                <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Delete this user?')" style="color:red;">🗑 Delete</a>
+                <button onclick="editUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['name']) ?>', '<?= htmlspecialchars($u['email']) ?>', '<?= $u['role'] ?>')">Edit</button>
+                <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Delete this user?')" style="color:red;">Delete</a>
               </td>
             </tr>
             <?php endwhile; ?>
@@ -187,9 +187,9 @@ if (!empty($search_term)) {
           <input type="email" name="email" id="editEmail" placeholder="Email" required>
           <input type="password" name="password" placeholder="New Password (optional)">
           <select name="role" id="editRole" style="background: rgba(255, 255, 255, 0.2); color: white;">
-            <option value="user">User</option>
-            <option value="security" >Security</option>
-            <option value="admin">Admin</option>
+            <option value="user" style="color: black;">User</option>
+            <option value="security" style="color: black;">Security</option>
+            <option value="admin" style="color: black;">Admin</option>
           </select>
           <button type="submit">Update</button>
           <button type="button" onclick="closeModal()">Cancel</button>

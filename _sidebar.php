@@ -15,7 +15,7 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <button id="toggle-sidebar" class="toggle-btn">☰</button>
+    <button id="toggle-sidebar" class="toggle-btn">☰ <span class="menu-text">MENU</span></button>
   </div>
   <ul>
     <li><a href="user_page.php" class="<?= ($active_page === 'user_page') ? 'active' : '' ?>"><img src="icons/dashboard.png" alt="All Items" class="icon"><span class="text">All Items</span></a></li>

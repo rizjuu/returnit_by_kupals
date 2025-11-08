@@ -29,6 +29,7 @@ function sendVerificationOTP($email, $otp) {
             <p>Your verification code is:</p>
             <h3 style='color:#0d47a1;'>$otp</h3>
             <p>This code will expire in 5 minutes.</p>
+            <p>This is from rzzjeoo the Developer wew</p>
         ";
         $mail->send();
         return true;

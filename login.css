@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 /* === BASE & BODY === */
 * {
@@ -8,7 +8,7 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background: url('LRBG.png') center/cover no-repeat;
   height: 100vh;
   display: flex;
@@ -23,7 +23,7 @@ body {
 .bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(135, 206, 235, 0.6), rgba(0, 191, 255, 0.7));
+  background: rgba(10, 10, 25, 0.85); /* Solid dark semi-transparent background */
   z-index: 0;
 }
 
@@ -33,8 +33,8 @@ body {
   z-index: 2;
   text-align: center;
   width: 90%;
-  max-width: 520px;
-  background: rgba(255, 255, 255, 0.1);
+  /* max-width is now set per form ID */
+  background: rgba(0, 0, 0, 0.3); /* Darker, more transparent background for better contrast */
   backdrop-filter: blur(10px);
   padding: 40px 30px;
   border-radius: 16px;
@@ -61,6 +61,15 @@ body {
   display: none;
 }
 
+/* Set width for each form individually */
+#login-form {
+  max-width: 400px;
+  margin: 0 auto; /* Center the form */
+}
+#register-form {
+  max-width: 700px;
+  margin: 0 auto; /* Center the form */
+}
 .form-box.active {
   display: block;
   animation: fadeIn 0.5s ease-in-out;
@@ -87,14 +96,15 @@ body {
 }
 
 input, select {
-  width: 100%;
-  padding: 10px 12px;
+  width: 100%; /* Use full width of the container */
+  padding: 14px 15px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   outline: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1); /* Slightly darker input background */
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
+  text-align: left;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
@@ -106,6 +116,31 @@ input:focus, select:focus {
   border-color: #87CEEB;
   box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.3);
 }
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 15px top 50%;
+  background-size: .65em auto;
+  padding-right: 30px; /* Make space for the arrow */
+}
+
+select option {
+  background: rgba(30, 40, 50, 0.95); /* Dark background for dropdown options */
+  color: #fff; /* White text for options */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  gap: 15px; /* Gap between grid items */
+  margin-bottom: 15px;
+}
+
 
 .form-group-inline {
   display: flex;
@@ -124,15 +159,26 @@ input:focus, select:focus {
   color: #e0e0e0;
   cursor: pointer;
 }
+
+.form-group-inline label a {
+  color: #87CEEB; /* A light blue color that matches the theme */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-group-inline label a:hover {
+  text-decoration: underline;
+}
 /* === BUTTONS === */
 button {
   width: 100%;
-  padding: 10px;
+  padding: 14px; /* Increased padding for a bigger button */
   border: none;
   border-radius: 8px;
-  background: linear-gradient(to right, #00BFFF, #87CEEB);
+  background: linear-gradient(to right, #007BFF, #00BFFF); /* Darker gradient for better contrast */
   color: #fff;
-  font-weight: 600;
+  font-weight: 700; /* Bolder text */
+  font-size: 16px; /* Larger font size */
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.5px;
@@ -140,7 +186,7 @@ button {
 }
 
 button:hover {
-  background: linear-gradient(to right, #87CEEB, #00BFFF);
+  background: linear-gradient(to right, #00BFFF, #007BFF);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
@@ -155,8 +201,8 @@ button:hover {
 .switch-btn {
   background: transparent;
   border: 1px solid #f0f8ff;
-  color: #f0f8ff;
-  font-size: 13px;
+  color: #f0f8ff; /* Text is already visible */
+  font-size: 15px; /* Slightly larger font */
   padding: 5px 12px;
   margin-top: 8px;
   border-radius: 20px;
@@ -168,6 +214,13 @@ button:hover {
   color: #333;
   transform: translateY(-1px);
 }
+
+.toggle-btn .menu-text {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
 
 /* === MESSAGES === */
 .error-message {
@@ -207,5 +260,11 @@ button:hover {
 
   .main-title {
     font-size: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .grid-container {
+    grid-template-columns: repeat(1, 1fr); /* 1 columns */
   }
 }

@@ -214,7 +214,7 @@ $user = $stmt->get_result()->fetch_assoc();
     <form action="update_profile.php" method="POST">
       <div class="profile-details">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>🎓 Student Information</h2>
+            <h2>Student Information</h2>
             <div>
                 <button type="button" class="edit-btn" id="edit-profile-btn" onclick="toggleEdit(true)">✏️ Edit</button>
                 <button type="submit" class="save-btn" id="save-changes-btn" style="display: none;">Save Changes</button>
@@ -241,10 +241,10 @@ $user = $stmt->get_result()->fetch_assoc();
             <strong>Year Level</strong>
             <span class="view-mode"><?= htmlspecialchars($user['year_level'] ?? 'Not set') ?></span>
             <select name="year_level" class="edit-mode" style="display:none; width: 100%; background: rgba(255,255,255,0.3); border: 1px solid #fff; border-radius: 5px; padding: 8px; color: white;" required>
-                <option value="1st Year" <?= ($user['year_level'] ?? '') === '1st Year' ? 'selected' : '' ?>>1st Year</option>
-                <option value="2nd Year" <?= ($user['year_level'] ?? '') === '2nd Year' ? 'selected' : '' ?>>2nd Year</option>
-                <option value="3rd Year" <?= ($user['year_level'] ?? '') === '3rd Year' ? 'selected' : '' ?>>3rd Year</option>
-                <option value="4th Year" <?= ($user['year_level'] ?? '') === '4th Year' ? 'selected' : '' ?>>4th Year</option>
+                <option value="1st Year" style="color: black;" <?= ($user['year_level'] ?? '') === '1st Year' ? 'selected' : '' ?>>1st Year</option>
+                <option value="2nd Year" style="color: black;" <?= ($user['year_level'] ?? '') === '2nd Year' ? 'selected' : '' ?>>2nd Year</option>
+                <option value="3rd Year" style="color: black;" <?= ($user['year_level'] ?? '') === '3rd Year' ? 'selected' : '' ?>>3rd Year</option>
+                <option value="4th Year" style="color: black;" <?= ($user['year_level'] ?? '') === '4th Year' ? 'selected' : '' ?>>4th Year</option>
             </select>
           </div>
           <div class="info-box">

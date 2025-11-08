@@ -119,6 +119,15 @@ if (!empty($search_term)) {
       animation: fadeIn 0.3s;
     }
 
+    .dropdown-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+      vertical-align: text-bottom;
+      filter: invert(1); /* Make icon white */
+    }
+
+
     /* === Search Section === */
     .search-form {
       display: flex;
@@ -160,7 +169,8 @@ if (!empty($search_term)) {
     <main class="main-content">
       <header class="user-header">
         <div class="welcome-user">
-          <h1>Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
+          <h1 style="font-size: 1.8rem; color: #f0f8ff; letter-spacing: 1px; margin: 0; text-shadow: 1px 1px 4px rgba(0,0,0,0.5);">CAMPUS LOST & FOUND</h1>
+          <p style="margin: 0; color: #ccc;">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</p>
         </div>
         <div class="header-actions">
           <form method="GET" action="user_page.php" class="search-form">
@@ -176,8 +186,8 @@ if (!empty($search_term)) {
               <span><?= htmlspecialchars($_SESSION['user_name']) ?></span>
             </button>
             <div id="myDropdown" class="profile-dropdown-content">
-              <a href="profile.php">👤 Profile</a>
-              <a href="logout.php">🚪 Logout</a>
+              <a href="profile.php"><img src="icons/profile.png" alt="Profile" class="dropdown-icon"> Profile</a>
+              <a href="logout.php"><img src="icons/logout.png" alt="Logout" class="dropdown-icon"> Logout</a>
             </div>
           </div>
         </div>
@@ -203,7 +213,7 @@ if (!empty($search_term)) {
               <td><?= htmlspecialchars($row['reporter_name'] ?? 'N/A') ?></td>
               <td>
   <?php if (!empty($row['image']) && file_exists($row['image'])): ?>
-    <button class="view-btn" onclick="viewImage('<?= htmlspecialchars($row['image']) ?>')">🔍 View</button>
+    <button class="view-btn" onclick="viewImage('<?= htmlspecialchars($row['image']) ?>')">View</button>
   <?php else: ?>
     <span class="no-image">No Image</span>
   <?php endif; ?>
@@ -215,7 +225,7 @@ if (!empty($search_term)) {
               <td><span class="badge"><?= ucfirst($row['status']) ?></span></td>
               <td>
                 <?php if ($row['type'] === 'lost' && $row['status'] === 'active'): ?>
-                  <a href="report_found_item.php?item_id=<?= $row['id'] ?>" class="view-btn found-it-btn">Found It</a>
+                  <a href="report_found_item.php?item_id=<?= $row['id'] ?>" class="view-btn found-it-btn">Found</a>
                 <?php elseif ($row['type'] === 'found' && $row['status'] === 'active'): ?>
                   <a href="claim_item.php?item_id=<?= $row['id'] ?>" class="view-btn claim-now-btn">Claim</a>
                 <?php endif; ?>
@@ -298,24 +308,36 @@ window.onclick = function(event) {
   background:#e6b800;
 }
 .found-it-btn {
-    background: linear-gradient(to right, #00BFFF, #87CEEB);
+    background: linear-gradient(135deg, #28a745, #2dc468); /* Vibrant Green */
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: none;
 }
 .found-it-btn:hover {
-    background: linear-gradient(to right, #87CEEB, #00BFFF);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #218838, #28a745);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 .claim-now-btn {
-    background: linear-gradient(to right, #ff8c00, #ffc107);
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53); /* Vibrant Orange/Red */
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: none;
 }
 .claim-now-btn:hover {
-    background: linear-gradient(to right, #ffc107, #ff8c00);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #e05252, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .header-actions {
@@ -330,6 +352,21 @@ window.onclick = function(event) {
 }
 </style>
 <script src="sidebar.js"></script>
+<script>
+    // Prevent back button from leaving the page
+    (function (window, location) {
+        history.replaceState(null, document.title, location.pathname + "#!/stealingyourhistory");
+        history.pushState(null, document.title, location.pathname);
+        window.addEventListener("popstate", function () {
+            if (location.hash === "#!/stealingyourhistory") {
+                history.replaceState(null, document.title, location.pathname);
+                setTimeout(function () {
+                    location.replace("user_page.php");
+                }, 0);
+            }
+        }, false);
+    }(window, location));
+</script>
 
 
 </body>

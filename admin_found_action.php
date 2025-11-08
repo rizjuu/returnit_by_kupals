@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'security')) {
-    header("Location: login_register.php");
+    header("Location: admin_found_reports.php"); // Redirect to the new found reports page
     exit;
 }
 
@@ -28,7 +28,7 @@ $stmt->execute();
 $report = $stmt->get_result()->fetch_assoc();
 
 if (!$report) {
-    $_SESSION['alert'] = "❌ Found report not found.";
+    $_SESSION['alert'] = "❌ Found report not found."; // Keep original alert
     header("Location: admin_page.php");
     exit;
 }
@@ -73,6 +73,6 @@ if ($action === 'approve') {
     $_SESSION['alert'] = "❌ Report has been rejected.";
 }
 
-header("Location: admin_page.php");
+header("Location: admin_found_reports.php"); // Redirect to the new found reports page
 exit;
 ?>

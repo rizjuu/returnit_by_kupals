@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'security')) {
-    header("Location: login_register.php");
+    header("Location: admin_claims.php"); // Redirect to the new claims page
     exit;
 }
 
@@ -22,7 +22,7 @@ $stmt->execute();
 $claim = $stmt->get_result()->fetch_assoc();
 
 if (!$claim) {
-    $_SESSION['alert'] = "❌ Claim not found.";
+    $_SESSION['alert'] = "❌ Claim not found."; // Keep original alert
     header("Location: admin_page.php");
     exit;
 }
@@ -101,6 +101,6 @@ if ($action === 'approve') {
     $_SESSION['alert'] = "❌ Claim rejected and user notified.";
 }
 
-header("Location: admin_page.php");
+header("Location: admin_claims.php"); // Redirect to the new claims page
 exit;
 ?>
