@@ -46,6 +46,16 @@ if (isset($_POST['action']) && $_POST['action'] === 'update') {
 // Delete user
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
+
+    // Prevent deleting the main admin
+    $stmt = $conn->prepare("SELECT role FROM users WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    if ($user && $user['role'] === 'admin' && $user['email'] === 'rizju@gmail.com') {
+        exit;
+    }
     if ($id !== $_SESSION['user_id']) { // prevent admin from deleting self
         $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
         $stmt->bind_param("i", $id);

@@ -87,6 +87,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("issss", $item_id, $claimant_name, $claimant_email, $proofPath, $message);
 
     if ($stmt->execute()) {
+        // --- 🚀 Notification Logic ---
+        $claimant_id = $_SESSION['user_id'];
+
+        // 1. Get item title and reporter's email
+        $item_info_stmt = $conn->prepare("SELECT title, reporter_email FROM items WHERE id = ?");
+        $item_info_stmt->bind_param("i", $item_id);
+        $item_info_stmt->execute();
+        $item_info = $item_info_stmt->get_result()->fetch_assoc();
+        $item_title = $item_info['title'] ?? 'Unknown Item';
+        $reporter_email = $item_info['reporter_email'];
+
+        // 2. Notify the claimant (the person who just submitted the claim)
+        $message_claimant = "Your claim for the item '{$item_title}' has been submitted. Please wait for admin approval.";
+        $notif_claimant = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
+        $notif_claimant->bind_param("is", $claimant_id, $message_claimant);
+        $notif_claimant->execute();
+
+        // 3. Notify the reporter (the person who found the item)
+        $reporter_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $reporter_stmt->bind_param("s", $reporter_email);
+        $reporter_stmt->execute();
+        $reporter_user = $reporter_stmt->get_result()->fetch_assoc();
+        if ($reporter_user) {
+            $reporter_id = $reporter_user['id'];
+            $message_reporter = "Someone has claimed the item '{$item_title}' that you reported found, please surrender it to the security desk.";
+            $notif_reporter = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
+            $notif_reporter->bind_param("is", $reporter_id, $message_reporter);
+            $notif_reporter->execute();
+        }
+        // --- End Notification Logic ---
         echo "<script>alert('✅ Claim submitted successfully! Please wait for admin approval.'); window.location.href='claim_history.php';</script>";
     } else {
         $msg = '❌ Failed to submit claim. Please try again.';

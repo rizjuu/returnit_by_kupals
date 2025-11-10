@@ -22,8 +22,8 @@ function createUserIfNotExists($conn, $name, $email, $passwordPlain, $role) {
     echo "✅ Created $role: $email (password: $passwordPlain)<br>";
 }
 
-createUserIfNotExists($conn, 'Main Admin', 'rizju@gmail.com', '12345', 'admin');
-createUserIfNotExists($conn, 'Security Personnel', 'securitynisya@gmail.com', '123456', 'security');
+createUserIfNotExists($conn, 'Main Admin', 'rizju@gmail.com', '12345', 'admin'); // Main admin user
+createUserIfNotExists($conn, 'Security Admin', 'securityadmin@gmail.com', 'password123', 'security'); // New security admin user
 
 echo "<hr>Done. Delete this file after use.";
 ?>

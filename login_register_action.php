@@ -39,7 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     setcookie('remember_me', $selector . ':' . bin2hex($token), $expires->getTimestamp(), '/', '', false, true);
                 }
 
-                header("Location: " . ($user['role'] === 'admin' ? 'admin_page.php' : 'user_page.php'));
+                if ($user['role'] === 'admin') {
+                    header("Location: admin_page.php");
+                } elseif ($user['role'] === 'security') {
+                    header("Location: security_dashboard.php");
+                } else {
+                    header("Location: user_page.php");
+                }
                 exit;
             } else {
                 $_SESSION['login_error'] = "Incorrect password.";

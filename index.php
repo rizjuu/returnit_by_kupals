@@ -4,6 +4,8 @@ session_start();
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
         header("Location: admin_page.php");
+    } elseif ($_SESSION['role'] === 'security') {
+        header("Location: security_dashboard.php");
     } else {
         header("Location: user_page.php");
     }
@@ -124,7 +126,7 @@ if (isset($_SESSION['user_id'])) {
     <div class="main-container">
         <div class="landing-content">
             <h1 class="main-title">CAMPUS LOST & FOUND</h1>
-            <p class="subtitle">Your one-stop solution for reuniting with your lost belongings.</p>
+            <p class="subtitle">ibalik nimo or ibalik nimo??!! USTPVILLA returnit Website yow GET STARTED!</p>
             <a href="login_register.php" class="btn-main">Get Started</a>
     
             <section class="info-section">
