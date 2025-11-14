@@ -65,7 +65,7 @@ function isActiveForm($formName, $activeForm) {
         <?= showError($errors['login']); ?>
         <div class="form-group">
           <label for="login-email">Email Address</label>
-          <input type="email" id="login-email" name="email" placeholder="e.g. juan@delacruz.com" required>
+          <input type="email" id="login-email" name="email" placeholder="e.g. rzzjeoo@gmail.com" required>
         </div>
         <div class="form-group">
           <label for="login-password">Password</label>
@@ -94,11 +94,11 @@ function isActiveForm($formName, $activeForm) {
         <div class="grid-container">
           <div class="form-group">
             <label for="reg-name">Full Name</label>
-            <input type="text" id="reg-name" name="name" placeholder="e.g. Juan Dela Cruz" required>
+            <input type="text" id="reg-name" name="name" placeholder="e.g. Rizju Honculada" required>
           </div>
           <div class="form-group">
             <label for="reg-email">Email Address</label>
-            <input type="email" id="reg-email" name="email" placeholder="e.g. juan@delacruz.com" required>
+            <input type="email" id="reg-email" name="email" placeholder="e.g. rzzjeoo@gmail.com" required>
           </div>
           <div class="form-group">
             <label for="reg-password">Password</label>
@@ -120,7 +120,7 @@ function isActiveForm($formName, $activeForm) {
           </div>          
           <div class="form-group">
             <label for="reg-studentid">Student ID</label>
-            <input type="text" id="reg-studentid" name="student_id" placeholder="e.g. 2021-12345" required>
+            <input type="text" id="reg-studentid" name="student_id" placeholder="e.g. 2023304220" required>
           </div>
           <div class="form-group">
             <label for="reg-program">Program</label>
@@ -138,7 +138,7 @@ function isActiveForm($formName, $activeForm) {
           </div>
           <div class="form-group">
           <label for="reg-campus">School Campus</label>
-          <input type="text" id="reg-campus" name="campus" placeholder="e.g. Main Campus" required>
+          <input type="text" id="reg-campus" name="campus" placeholder="e.g. USTP CDO Main Campus" required>
         </div>
         <div class="form-group-inline">
           <input type="checkbox" id="reg-terms" name="terms" required>

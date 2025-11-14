@@ -41,7 +41,18 @@
         <p>We reserve the right, at Our sole discretion, to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at Our sole discretion.</p>
 
         <h2>7. Contact Us</h2>
-        <p>If you have any questions about these Terms and Conditions, You can contact us by email at: support@campuslostandfound.com</p>
+        <p>If you have any questions about these Terms and Conditions</p>
+        <p> You can contact us by email at: jeogardones@gmail.com</p>
+
+        <h2>THE DEVELOPERS</h2>
+        <p>HONCULADA JEORIZ G.</p>
+        <p>NANAY ORIEL S.</p>
+        <p>MONCADA SHEKINAH C.</p>
+        <p>MANZAN JAMIR</p>
+        <p>POLINAR KYLENE A.</p>
+        <p>PADERNA REX</p>
+        <p>ABATO PHOEBE ATHENA D.</p>
+
     </div>
 </body>
 </html>

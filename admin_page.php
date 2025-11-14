@@ -70,7 +70,7 @@ unset($_SESSION['alert']);
 
       <!-- ITEMS TABLE -->
       <section>
-        <h2>Items Reported</h2>
+<h2>Items Reported</h2>
         <table>
           <tr>
             <th>Reporter</th>

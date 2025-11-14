@@ -51,7 +51,7 @@ if ($action === 'approve') {
         $user_id = $user_result['id'];
 
         // 🕒 Move to claim history
-        $history = $conn->prepare("INSERT INTO claim_history (user_id, item_id, date_claimed) VALUES (?, ?, NOW())");
+        $history = $conn->prepare("INSERT INTO claim_history (user_id, item_id, date_claimed, status) VALUES (?, ?, NOW(), 'approved')");
         $history->bind_param("ii", $user_id, $claim['item_id']);
         $history->execute();
 
@@ -66,32 +66,22 @@ if ($action === 'approve') {
         $_SESSION['alert'] = "⚠️ Claim approved, but user not found for notification.";
     }
 
-    // 🧹 Remove claim from pending list
-    $conn->query("DELETE FROM claims WHERE id=$claim_id");
-
 } elseif ($action === 'reject') {
-    // ❌ Reject claim
-    $conn->query("UPDATE claims SET status='rejected' WHERE id=$claim_id");
-
-    // 🧹 Remove rejected claim
-    $conn->query("DELETE FROM claims WHERE id=$claim_id");
-
-    // Optional: Notify user about rejection
+    // Notify user about rejection first
     $user_stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
     $user_stmt->bind_param("s", $claim['claimant_email']);
     $user_stmt->execute();
     $user_result = $user_stmt->get_result()->fetch_assoc();
 
     if ($user_result) {
-        $user_id = $user_result['id'];
-        $message = "❌ Your claim for item '{$claim['claimant_name']}' was rejected by the admin.";
         // Fetch item title for the rejection notification message
         $item_title_stmt = $conn->prepare("SELECT title FROM items WHERE id = ?");
         $item_title_stmt->bind_param("i", $claim['item_id']);
         $item_title_stmt->execute();
         $item_title_result = $item_title_stmt->get_result()->fetch_assoc();
         $item_title = $item_title_result['title'] ?? 'an item'; // Default if title not found
-
+        
+        $user_id = $user_result['id'];
         $message = "❌ Your claim for item '{$item_title}' was rejected by the admin.";
         $notif = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
         $notif->bind_param("is", $user_id, $message);
@@ -99,6 +89,12 @@ if ($action === 'approve') {
     }
 
     $_SESSION['alert'] = "❌ Claim rejected and user notified.";
+
+    // ❌ Update claim status to 'rejected'
+    $conn->query("UPDATE claims SET status='rejected' WHERE id=$claim_id");
+
+    // 🧹 Now, remove the rejected claim from the pending list
+    $conn->query("DELETE FROM claims WHERE id=$claim_id");
 }
 
 header("Location: admin_claims.php"); // Redirect to the new claims page

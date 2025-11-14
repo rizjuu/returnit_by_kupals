@@ -23,7 +23,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'surrender' && isset($_GET['it
 }
 
 // Fetch items that have been approved as 'found' but not yet surrendered
-$items = $conn->query("
+$items_query = $conn->query("
     SELECT i.id, i.title, i.description, i.location, i.date_lost_found, i.image, u.name as reporter_name
     FROM items i
     JOIN users u ON i.reporter_email = u.email
@@ -31,32 +31,15 @@ $items = $conn->query("
 ");
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Security Personnel Page</title>
-    <link rel="stylesheet" href="admin.css">
+    <!-- Load user.css for sidebar structure, then admin.css for dashboard theme -->
     <link rel="stylesheet" href="user.css">
-    <style>
-        .item-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .item-table th, .item-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .item-table th {
-            background-color: #f2f2f2;
-        }
-        .item-image {
-            max-width: 100px;
-            max-height: 100px;
-        }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">
@@ -64,22 +47,23 @@ $items = $conn->query("
 
         <main class="main-content">
             <h1>Items Awaiting Surrender</h1>
-            <table class="item-table" id="items-awaiting-surrender">
-                <thead>
-                    <tr>
-                        <th>Item ID</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Location Found</th>
-                        <th>Date Found</th>
-                        <th>Image</th>
-                        <th>Reporter Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($items && $items->num_rows > 0): ?>
-                        <?php while ($item = $items->fetch_assoc()): ?>
+            <section>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Location Found</th>
+                            <th>Date Found</th>
+                            <th>Image</th>
+                            <th>Reporter Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($items_query && $items_query->num_rows > 0): ?>
+                        <?php while ($item = $items_query->fetch_assoc()): ?>
                             <tr>
                                 <td><?= htmlspecialchars($item['id']) ?></td>
                                 <td><?= htmlspecialchars($item['title']) ?></td>
@@ -88,7 +72,7 @@ $items = $conn->query("
                                 <td><?= htmlspecialchars($item['date_lost_found']) ?></td>
                                 <td>
                                     <?php if ($item['image']): ?>
-                                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="Item Image" class="item-image">
+                                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="Item Image" style="width: 80px; height: 80px; object-fit: cover;">
                                     <?php else: ?>
                                         No Image
                                     <?php endif; ?>
@@ -102,10 +86,11 @@ $items = $conn->query("
                     <?php else: ?>
                         <tr><td colspan="8" style="text-align: center;">No items are currently awaiting surrender.</td></tr>
                     <?php endif; ?>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </section>
         </main>
     </div>
-    <script src="script.js"></script>
+    <script src="sidebar.js"></script>
 </body>
 </html>
