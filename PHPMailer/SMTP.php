@@ -232,6 +232,7 @@ class SMTP
      * The socket for the server connection.
      *
      * @var ?resource
+     * @var resource|null
      */
     protected $smtp_conn;
 

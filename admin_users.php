@@ -7,42 +7,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Create user
-if (isset($_POST['action']) && $_POST['action'] === 'create') {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $role = $_POST['role'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $name, $email, $password, $role);
-    $stmt->execute();
-    $stmt->close();
-    header("Location: admin_users.php");
-    exit;
-}
-
-// Update user
-if (isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id = (int)$_POST['id'];
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $role = $_POST['role'];
-
-    if (!empty($_POST['password'])) {
-        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE users SET name=?, email=?, password=?, role=? WHERE id=?");
-        $stmt->bind_param("ssssi", $name, $email, $password, $role, $id);
-    } else {
-        $stmt = $conn->prepare("UPDATE users SET name=?, email=?, role=? WHERE id=?");
-        $stmt->bind_param("sssi", $name, $email, $role, $id);
-    }
-    $stmt->execute();
-    $stmt->close();
-    header("Location: admin_users.php");
-    exit;
-}
-
 // Delete user
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
@@ -62,6 +26,28 @@ if (isset($_GET['delete'])) {
         $stmt->execute();
         $stmt->close();
     }
+    header("Location: admin_users.php");
+    exit;
+}
+
+// Ban/Unban user
+if (isset($_GET['ban'])) {
+    $id = (int)$_GET['ban'];
+    if ($id !== $_SESSION['user_id']) { // prevent admin from banning self
+        $stmt = $conn->prepare("UPDATE users SET status = 'banned' WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    header("Location: admin_users.php");
+    exit;
+}
+if (isset($_GET['unban'])) {
+    $id = (int)$_GET['unban'];
+    $stmt = $conn->prepare("UPDATE users SET status = 'active' WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
     header("Location: admin_users.php");
     exit;
 }
@@ -121,16 +107,43 @@ if (!empty($search_term)) {
       cursor: pointer;
       text-decoration: none; /* For the 'Clear' link */
     }
-    .admin-layout {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
+    .action-buttons-container {
+        margin-bottom: 20px;
+    }
+    .action-buttons-container button {
+        background: linear-gradient(to right, #ff8c00, #ffc107);
+        padding: 12px 20px;
     }
     .admin-layout .form-container {
       flex: 0 0 400px; /* Fixed width for the add form */
     }
     .admin-layout .users-table-container {
       flex: 1; /* The table will take the remaining space */
+    }
+    .action-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+    .ban-btn {
+        background-color: #ffc107; /* orange/yellow */
+        color: #212529;
+    }
+    .unban-btn {
+        background-color: #28a745; /* green */
+    }
+    .delete-btn {
+        background-color: #dc3545; /* red */
+    }
+    .actions-cell {
+        display: flex; gap: 8px;
     }
   </style>
 </head>
@@ -141,23 +154,11 @@ if (!empty($search_term)) {
     <main class="main-content">
       <h1>Admin User Management</h1>
 
-      <div class="admin-layout">
-        <section class="form-container">
-          <h2>Add New User</h2>
-          <form method="POST">
-            <input type="hidden" name="action" value="create">
-            <input type="text" name="name" placeholder="Full Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <select name="role" style="background: rgba(255, 255, 255, 0.2); color: white;">
-              <option value="user" style="color: black;">User</option>
-              <option value="security" style="color: black;">Security</option>
-              <option value="admin" style="color: black;">Admin</option>
-            </select>
-            <button type="submit">Add User</button>
-          </form>
-        </section>
+      <div class="action-buttons-container">
+        <button>Accidents and Issues</button>
+      </div>
 
+      <div class="admin-layout">
         <section class="users-table-container">
           <h2>Existing Users</h2>
           <!-- Search Bar -->
@@ -178,9 +179,13 @@ if (!empty($search_term)) {
               <td><?= htmlspecialchars($u['name']) ?></td>
               <td><?= htmlspecialchars($u['email']) ?></td>
               <td><?= htmlspecialchars($u['role']) ?></td>
-              <td>
-                <button onclick="editUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['name']) ?>', '<?= htmlspecialchars($u['email']) ?>', '<?= $u['role'] ?>')">Edit</button>
-                <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Delete this user?')" style="color:red;">Delete</a>
+              <td class="actions-cell">
+                <?php if (($u['status'] ?? 'active') === 'active'): ?>
+                  <a href="?ban=<?= $u['id'] ?>" onclick="return confirm('Are you sure you want to ban this user?')" class="action-btn ban-btn">Ban</a>
+                <?php else: ?>
+                  <a href="?unban=<?= $u['id'] ?>" onclick="return confirm('Are you sure you want to unban this user?')" class="action-btn unban-btn">Unban</a>
+                <?php endif; ?>
+                <a href="?delete=<?= $u['id'] ?>" onclick="return confirm('Are you sure you want to delete this user?')" class="action-btn delete-btn">Delete</a>
               </td>
             </tr>
             <?php endwhile; ?>
@@ -188,23 +193,6 @@ if (!empty($search_term)) {
         </section>
       </div>
 
-      <div id="editModal" class="form-container" style="display:none;">
-        <h2>Edit User</h2>
-        <form method="POST">
-          <input type="hidden" name="action" value="update">
-          <input type="hidden" name="id" id="editId">
-          <input type="text" name="name" id="editName" placeholder="Name" required>
-          <input type="email" name="email" id="editEmail" placeholder="Email" required>
-          <input type="password" name="password" placeholder="New Password (optional)">
-          <select name="role" id="editRole" style="background: rgba(255, 255, 255, 0.2); color: white;">
-            <option value="user" style="color: black;">User</option>
-            <option value="security" style="color: black;">Security</option>
-            <option value="admin" style="color: black;">Admin</option>
-          </select>
-          <button type="submit">Update</button>
-          <button type="button" onclick="closeModal()">Cancel</button>
-        </form>
-      </div>
     </main>
   </div>
 

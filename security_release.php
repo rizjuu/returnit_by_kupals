@@ -57,11 +57,12 @@ $claims = $conn->query("
         i.title, 
         i.image, 
         u.name as claimant_name,
-        u.student_id,
-        c.created_at as date_approved
+        u.student_id, 
+        COALESCE(ch.date_claimed, c.created_at) as date_approved -- Fallback to claim creation date if history is missing
     FROM claims c
-    JOIN items i ON c.item_id = i.id
-    JOIN users u ON c.claimant_email = u.email
+    LEFT JOIN items i ON c.item_id = i.id
+    LEFT JOIN users u ON c.claimant_email = u.email
+    LEFT JOIN claim_history ch ON c.item_id = ch.item_id AND ch.status = 'approved' AND u.id = ch.user_id
     WHERE c.status = 'approved'
     ORDER BY c.created_at ASC
 ");
@@ -77,6 +78,29 @@ unset($_SESSION['alert']);
     <!-- Load user.css for sidebar structure, then admin.css for dashboard theme -->
     <link rel="stylesheet" href="user.css">
     <link rel="stylesheet" href="admin.css">
+    <style>
+        .release-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .release-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #218838, #1e7e34);
+        }
+        .release-btn img { filter: brightness(0) invert(1); }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -107,12 +131,14 @@ unset($_SESSION['alert']);
                                 <tr>
                                     <td><?= htmlspecialchars($claim['item_id']) ?></td>
                                     <td><?= htmlspecialchars($claim['title']) ?></td>
-                                    <td><img src="<?= htmlspecialchars($claim['image']) ?>" alt="Item Image" style="width: 80px; height: 80px; object-fit: cover;"></td>
-                                    <td><?= htmlspecialchars($claim['claimant_name']) ?></td>
-                                    <td><?= htmlspecialchars($claim['student_id']) ?></td>
+                                    <td><img src="<?= htmlspecialchars($claim['image'] ?? 'default_item.png') ?>" alt="Item Image" style="width: 80px; height: 80px; object-fit: cover;"></td>
+                                    <td><?= htmlspecialchars($claim['claimant_name'] ?? 'User Deleted') ?></td>
+                                    <td><?= htmlspecialchars($claim['student_id'] ?? 'N/A') ?></td>
                                     <td><?= date("M d, Y h:i A", strtotime($claim['date_approved'])) ?></td>
                                     <td class="action-links">
-                                        <a href="?action=release&claim_id=<?= $claim['claim_id'] ?>" class="approve-btn" onclick="return confirm('Confirm that you have released this item to the claimant?')" style="background: #28a745; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none;">Mark as Released</a>
+                                        <a href="?action=release&claim_id=<?= $claim['claim_id'] ?>" class="release-btn" onclick="return confirm('Confirm that you have released this item to the claimant?')">
+                                            <img src="icons/reclaim.png" alt="" width="16" height="16"> Mark as Released
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>

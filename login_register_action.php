@@ -18,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password'])) {
+                if (($user['status'] ?? 'active') === 'banned') {
+                    $_SESSION['login_error'] = "Your account has been banned. Please contact an administrator.";
+                    $_SESSION['active_form'] = 'login';
+                    header("Location: login_register.php");
+                    exit;
+                }
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['user_name'] = $user['name'];

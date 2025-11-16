@@ -4,10 +4,12 @@ require_once 'config.php';
 
 $errors = [
   'login' => $_SESSION['login_error'] ?? '',
-  'register' => $_SESSION['register_error'] ?? '',
+  'register' => $_SESSION['register_error'] ?? ''
 ];
 $success_msg = $_SESSION['register_success'] ?? '';
 $activeForm = $_SESSION['active_form'] ?? 'login';
+
+// Unset session variables after reading them
 unset($_SESSION['login_error'], $_SESSION['register_error'], $_SESSION['active_form'], $_SESSION['register_success']);
 
 function showError($error) {
@@ -52,16 +54,13 @@ function isActiveForm($formName, $activeForm) {
     <h1 class="main-title">CAMPUS LOST & FOUND</h1>
     <p class="subtitle">by Kupal Company</p>
 
-    <?php if ($success_msg): ?>
-      <div class="success-message">
-        <?= $success_msg ?>
-      </div>
-    <?php endif; ?>
-
     <!-- LOGIN FORM -->
     <div class="form-box <?= isActiveForm('login', $activeForm); ?>" id="login-form">
       <form action="login_register_action.php" method="post">
         <h2>Login</h2>
+        <?php if ($success_msg && $activeForm === 'login'): ?>
+            <p class="success-message" style="display:block;"><?= $success_msg ?></p>
+        <?php endif; ?>
         <?= showError($errors['login']); ?>
         <div class="form-group">
           <label for="login-email">Email Address</label>
@@ -80,6 +79,9 @@ function isActiveForm($formName, $activeForm) {
           <input type="checkbox" id="remember-me" name="remember_me" value="1">
           <label for="remember-me">Remember Me</label>
         </div>
+        <div style="text-align: right; margin-top: 10px; margin-bottom: 15px;">
+            <a href="forgot_password.php" style="color: #fff; text-decoration: underline;">Forgot Password?</a>
+        </div>
         <button type="submit" name="login">Login</button>
         <p class="switch-text">Don’t have an account?</p>
         <button type="button" class="switch-btn" onclick="showForm('register-form')">Register</button>
@@ -90,6 +92,9 @@ function isActiveForm($formName, $activeForm) {
     <div class="form-box <?= isActiveForm('register', $activeForm); ?>" id="register-form">
       <form action="login_register_action.php" method="post">
        <h2>Register</h2>
+        <?php if ($success_msg && $activeForm === 'register'): ?>
+            <p class="success-message" style="display:block;"><?= $success_msg ?></p>
+        <?php endif; ?>
         <?=showError($errors['register']); ?>
         <div class="grid-container">
           <div class="form-group">

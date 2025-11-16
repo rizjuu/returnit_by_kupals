@@ -12,7 +12,7 @@ $user_name = $_SESSION['user_name'];
 
 // Fetch claim history records linked by user_id
 $stmt = $conn->prepare("
-  SELECT ch.id, i.title, i.type, ch.date_claimed 
+  SELECT ch.id, i.title, i.type, ch.date_claimed, ch.status, ch.date_released
   FROM claim_history ch
   JOIN items i ON ch.item_id = i.id
   WHERE ch.user_id = ?
@@ -47,6 +47,8 @@ $history = $stmt->get_result();
               <th>Title</th>
               <th>Type</th>
               <th>Date Claimed</th>
+              <th>Status</th>
+              <th>Date Released</th>
             </tr>
           </thead>
           <tbody>
@@ -57,11 +59,13 @@ $history = $stmt->get_result();
                 <td><?= htmlspecialchars($row['title']) ?></td>
                 <td><?= ucfirst($row['type']) ?></td>
                 <td><?= date("M d, Y h:i A", strtotime($row['date_claimed'])) ?></td>
+                <td><span class="badge <?= htmlspecialchars($row['status']) ?>"><?= ucfirst(htmlspecialchars($row['status'])) ?></span></td>
+                <td><?= $row['date_released'] ? date("M d, Y h:i A", strtotime($row['date_released'])) : 'Pending' ?></td>
               </tr>
               <?php endwhile; ?>
             <?php else: ?>
               <tr>
-                <td colspan="4" style="text-align:center;">No claim history found.</td>
+                <td colspan="6" style="text-align:center;">No claim history found.</td>
               </tr>
             <?php endif; ?>
           </tbody>
