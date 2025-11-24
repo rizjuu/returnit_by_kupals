@@ -14,11 +14,6 @@ if (!isset($active_page)) {
       </a>
     </li>
     <li>
-      <a href="security_page.php" class="<?= ($active_page === 'security_surrender') ? 'active' : '' ?>">
-        <img src="icons/pendingfound.png" alt="Receive Items" class="icon" width="20" height="20"> <span class="text">Receive Items</span>
-      </a>
-    </li>
-    <li>
       <a href="security_release.php" class="<?= ($active_page === 'security_release') ? 'active' : '' ?>">
         <img src="icons/reclaim.png" alt="Release Items" class="icon" width="20" height="20"> <span class="text">Release Items</span>
       </a>

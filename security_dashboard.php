@@ -8,7 +8,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'security') {
 }
 
 // Get dashboard counts
-$items_to_receive = $conn->query("SELECT COUNT(*) as cnt FROM items WHERE status = 'found'")->fetch_assoc()['cnt'] ?? 0;
 $items_to_release = $conn->query("SELECT COUNT(*) as cnt FROM claims WHERE status = 'approved'")->fetch_assoc()['cnt'] ?? 0;
 
 
@@ -36,8 +35,6 @@ unset($_SESSION['alert']);
       <?php endif; ?>
 
       <div class="cards">
-        <div class="card clickable-card" onclick="window.location.href='security_page.php'">
-            <h3>Items to Receive</h3><div class="value"><?= (int)$items_to_receive ?></div></div>
         <div class="card clickable-card" onclick="window.location.href='security_release.php'">
             <h3>Items to Release</h3><div class="value"><?= (int)$items_to_release ?></div></div>
       </div>

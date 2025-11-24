@@ -17,11 +17,14 @@ $report_id = intval($_GET['id']);
 
 // Get report details
 $stmt = $conn->prepare("
-    SELECT fr.*, i.title as item_title, i.reporter_email as owner_email, u.id as finder_user_id, u.email as finder_email
+    SELECT fr.*, i.title as item_title, 
+           owner.id as owner_user_id, owner.name as owner_name, owner.email as owner_email,
+           finder.id as finder_user_id, finder.name as finder_name, finder.email as finder_email
     FROM found_reports fr
     JOIN items i ON fr.item_id = i.id
-    JOIN users u ON fr.finder_user_id = u.id
-    WHERE fr.id = ?
+    JOIN users finder ON fr.finder_user_id = finder.id
+    JOIN users owner ON i.reporter_email = owner.email
+    WHERE fr.id = ? AND fr.status = 'pending'
 ");
 $stmt->bind_param("i", $report_id);
 $stmt->execute();
@@ -39,37 +42,42 @@ $item_id = $report['item_id'];
 if ($action === 'approve') {
     // Update found_reports status
     $conn->query("UPDATE found_reports SET status='approved' WHERE id=$report_id");
-
-    // Update the original item's status to 'found'
-    $conn->query("UPDATE items SET status='found' WHERE id=$item_id");
-
-    // --- Notify both users ---
-
-    // 1. Notify the original owner
-    $owner_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $owner_stmt->bind_param("s", $report['owner_email']);
-    $owner_stmt->execute();
-    $owner_user = $owner_stmt->get_result()->fetch_assoc();
-    if ($owner_user) {
-        $owner_id = $owner_user['id'];
-        $message_owner = "🎉 Good news! Your lost item '{$item_title}' has been reported as found. Please coordinate at the Security Desk.";
-        $notif_owner = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
-        $notif_owner->bind_param("is", $owner_id, $message_owner);
-        $notif_owner->execute();
-    }
-
-    // 2. Notify the finder
+    
+    // Set the original item to 'inactive' as it's now considered claimed and off the public board
+    $conn->query("UPDATE items SET status='inactive' WHERE id=$item_id");
+    
+    // --- Create an automatic 'approved' claim for the owner ---
+    $claim_stmt = $conn->prepare("INSERT INTO claims (item_id, claimant_name, claimant_email, status, created_at) VALUES (?, ?, ?, 'approved', NOW())");
+    $claim_stmt->bind_param("iss", $item_id, $report['owner_name'], $report['owner_email']);
+    $claim_stmt->execute();
+    
+    // --- Add to claim history for the owner ---
+    $owner_id = $report['owner_user_id'];
+    $history_stmt = $conn->prepare("INSERT INTO claim_history (user_id, item_id, date_claimed, status) VALUES (?, ?, NOW(), 'approved')");
+    $history_stmt->bind_param("ii", $owner_id, $item_id);
+    $history_stmt->execute();
+    
+    // --- Notify both users with updated messages ---
+    
+    // 1. Notify the original owner that their item is ready for pickup
+    $message_owner = "✅ Great news! Your lost item '{$item_title}' has been found and your claim is automatically approved. You can now pick it up at the Security Desk.";
+    $notif_owner = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
+    $notif_owner->bind_param("is", $owner_id, $message_owner);
+    $notif_owner->execute();
+    
+    // 2. Notify the finder to surrender the item
     $finder_id = $report['finder_user_id'];
     $message_finder = "✅ Thank you! Your report for finding the item '{$item_title}' has been approved. Please bring the item to the Security Desk.";
     $notif_finder = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
     $notif_finder->bind_param("is", $finder_id, $message_finder);
     $notif_finder->execute();
-
-    $_SESSION['alert'] = "✅ Report approved. The item status is now 'Found', and both users have been notified.";
-
+    
+    $_SESSION['alert'] = "✅ Report approved. An automatic claim has been created for the owner, and both users are notified.";
+    
 } elseif ($action === 'reject') {
     // Reject the report
     $conn->query("UPDATE found_reports SET status='rejected' WHERE id=$report_id");
+    // You might want to notify the finder of the rejection here as well.
     $_SESSION['alert'] = "❌ Report has been rejected.";
 }
 

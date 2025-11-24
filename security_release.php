@@ -49,22 +49,37 @@ if (isset($_GET['action']) && $_GET['action'] === 'release' && isset($_GET['clai
     exit;
 }
 
-// Fetch items that have been approved for claiming but not yet released
+// Fetch items that are physically with security. This includes:
+// 1. Items that have been approved for a claimant to pick up.
+// 2. Items that have been surrendered by a finder but are not yet claimed.
 $claims = $conn->query("
-    SELECT 
-        c.id as claim_id, 
-        i.id as item_id, 
-        i.title, 
-        i.image, 
-        u.name as claimant_name,
-        u.student_id, 
-        COALESCE(ch.date_claimed, c.created_at) as date_approved -- Fallback to claim creation date if history is missing
+    -- Part 1: Items approved for release to a specific claimant (originally reported by someone)
+ SELECT
+        c.id as claim_id,
+        i.id as item_id,
+        i.title,
+        i.image,
+        claimant_user.name as claimant_name,
+        claimant_user.student_id,
+        COALESCE(ch.date_claimed, c.created_at) as date_approved,
+        'Awaiting Claimant Pickup' as current_status,
+        reporter_user.name as reporter_name
     FROM claims c
     LEFT JOIN items i ON c.item_id = i.id
-    LEFT JOIN users u ON c.claimant_email = u.email
-    LEFT JOIN claim_history ch ON c.item_id = ch.item_id AND ch.status = 'approved' AND u.id = ch.user_id
+ LEFT JOIN users claimant_user ON c.claimant_email = claimant_user.email
+    LEFT JOIN users reporter_user ON i.reporter_email = reporter_user.email
+    LEFT JOIN claim_history ch ON c.item_id = ch.item_id AND ch.status = 'approved' AND claimant_user.id = ch.user_id
     WHERE c.status = 'approved'
-    ORDER BY c.created_at ASC
+    UNION ALL
+    -- Part 2: Items surrendered by finders, awaiting a claim (reported by someone)
+    SELECT
+        NULL, i.id, i.title, i.image,
+        'N/A', 'N/A', NULL,
+        'Awaiting Claim' as current_status,
+        reporter_user.name as reporter_name
+    FROM items i
+    LEFT JOIN users reporter_user ON i.reporter_email = reporter_user.email
+    WHERE i.status = 'surrendered'
 ");
 
 $alert = $_SESSION['alert'] ?? '';
@@ -117,11 +132,12 @@ unset($_SESSION['alert']);
                     <thead>
                         <tr>
                             <th>Item ID</th>
-                            <th>Title</th>
+                            <th>Item Title</th>
+                            <th>Reported By</th>
                             <th>Image</th>
                             <th>Claimant Name</th>
                             <th>Claimant Student ID</th>
-                            <th>Date Approved</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -131,19 +147,26 @@ unset($_SESSION['alert']);
                                 <tr>
                                     <td><?= htmlspecialchars($claim['item_id']) ?></td>
                                     <td><?= htmlspecialchars($claim['title']) ?></td>
+                                    <td><?= htmlspecialchars($claim['reporter_name'] ?? 'N/A') ?></td>
                                     <td><img src="<?= htmlspecialchars($claim['image'] ?? 'default_item.png') ?>" alt="Item Image" style="width: 80px; height: 80px; object-fit: cover;"></td>
-                                    <td><?= htmlspecialchars($claim['claimant_name'] ?? 'User Deleted') ?></td>
+                                    <td><?= htmlspecialchars($claim['claimant_name'] ?? 'N/A') ?></td>
                                     <td><?= htmlspecialchars($claim['student_id'] ?? 'N/A') ?></td>
-                                    <td><?= date("M d, Y h:i A", strtotime($claim['date_approved'])) ?></td>
+                                    <td>
+                                        <span class="badge <?= str_replace(' ', '-', strtolower($claim['current_status'])) ?>">
+                                            <?= htmlspecialchars($claim['current_status']) ?>
+                                        </span>
+                                    </td>
                                     <td class="action-links">
-                                        <a href="?action=release&claim_id=<?= $claim['claim_id'] ?>" class="release-btn" onclick="return confirm('Confirm that you have released this item to the claimant?')">
-                                            <img src="icons/reclaim.png" alt="" width="16" height="16"> Mark as Released
-                                        </a>
+                                        <?php if ($claim['claim_id']): // Only show release button if there is a claim to process ?>
+                                            <a href="?action=release&claim_id=<?= $claim['claim_id'] ?>" class="release-btn" onclick="return confirm('Confirm that you have released this item to the claimant?')">
+                                                <img src="icons/reclaim.png" alt="" width="16" height="16"> Mark as Released
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="7" style="text-align: center;">No items are currently awaiting release.</td></tr>
+                            <tr><td colspan="8" style="text-align: center;">No items are currently awaiting release.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
